@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h3>
+        <p class="text-muted mb-0">Overview of the employee management system</p>
+    </div>
+    <a href="/emp" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Add Employee
+    </a>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-label">Total Employees</span>
+                <span class="stat-value">{{ total }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #dbeafe, #e0e7ff);">
+                <i class="bi bi-person-plus-fill"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-label">Active</span>
+                <span class="stat-value">{{ total }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0);">
+                <i class="bi bi-building"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-label">Departments</span>
+                <span class="stat-value">&mdash;</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Recent Employees</h5>
+                <a href="/show" class="btn btn-sm btn-outline">View All <i class="bi bi-arrow-right ms-1"></i></a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Contact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for employee in employees|slice:":5" %}
+                            <tr>
+                                <td><span class="badge rounded-pill pill-badge">{{ employee.eid }}</span></td>
+                                <td class="fw-semibold">{{ employee.ename }}</td>
+                                <td>{{ employee.eemail }}</td>
+                                <td>{{ employee.econtact }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <i class="bi bi-inbox fs-1 d-block mb-3 text-muted"></i>
+                                    <p class="text-muted mb-3">No employees registered yet.</p>
+                                    <a href="/emp" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-plus-lg me-1"></i>Add Your First Employee
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning-charge me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    <a href="/emp" class="btn btn-primary w-100 py-3 text-start">
+                        <i class="bi bi-person-plus-fill me-2"></i>Add New Employee
+                    </a>
+                    <a href="/show" class="btn btn-outline w-100 py-3 text-start">
+                        <i class="bi bi-people-fill me-2"></i>View All Employees
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>System Info</h5>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="info-label">Version</span>
+                    <span class="info-value">1.0.0</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <span class="info-value"><span class="badge rounded-pill" style="background: #d1fae5; color: #065f46;">Operational</span></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Records</span>
+                    <span class="info-value">{{ total }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
