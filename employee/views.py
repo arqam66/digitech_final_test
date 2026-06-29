@@ -1,7 +1,7 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import EmployeeForm
 from .models import Employee
-# Create your views here.
+
 
 def show(request):
     employees = Employee.objects.all()
@@ -12,32 +12,31 @@ def emp(request):
     if request.method == "POST":
         form = EmployeeForm(request.POST)
         if form.is_valid():
-            try:
-                form.save()
-                return redirect('/show')
-            except:
-                pass
+            form.save()
+            return redirect('/show')
     else:
         form = EmployeeForm()
     return render(request, 'index.html', {'form': form})
 
 
-
 def edit(request, id):
-    employee = Employee.objects.get(id=id)
-    return render(request, 'edit.html', {'employee': employee})
+    employee = get_object_or_404(Employee, id=id)
+    form = EmployeeForm(instance=employee)
+    return render(request, 'edit.html', {'employee': employee, 'form': form})
 
 
 def update(request, id):
-    employee = Employee.objects.get(id=id)
-    form = EmployeeForm(request.POST, instance = employee)
+    employee = get_object_or_404(Employee, id=id)
+    form = EmployeeForm(request.POST, instance=employee)
     if form.is_valid():
         form.save()
         return redirect("/show")
-    return render(request, 'edit.html', {'employee': employee})
+    return render(request, 'edit.html', {'form': form, 'employee': employee})
 
 
-def destroy(request,id):
-    employee = Employee.objects.get(id=id)
-    employee.delete()
-    return redirect("/show")
+def destroy(request, id):
+    employee = get_object_or_404(Employee, id=id)
+    if request.method == "POST":
+        employee.delete()
+        return redirect("/show")
+    return render(request, 'confirm_delete.html', {'employee': employee})
