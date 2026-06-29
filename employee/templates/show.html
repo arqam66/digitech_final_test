@@ -28,12 +28,14 @@
                         <td>{{ employee.eemail }}</td>
                         <td>{{ employee.econtact }}</td>
                         <td class="text-center action-icons">
-                            <a href="/edit/{{ employee.id }}" class="btn btn-warning btn-sm">
-                                <i class="bi bi-pencil-square"></i> Edit
-                            </a>
-                            <a href="/delete/{{ employee.id }}" class="btn btn-danger btn-sm">
-                                <i class="bi bi-trash"></i> Delete
-                            </a>
+                            <div class="d-flex flex-nowrap justify-content-center gap-1">
+                                <a href="/edit/{{ employee.id }}" class="btn btn-warning btn-sm">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <a href="/delete/{{ employee.id }}" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 {% empty %}
