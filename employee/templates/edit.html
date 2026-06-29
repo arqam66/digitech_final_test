@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Update Employee</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="/update/{{employee.id}}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Employee ID</label>
+                        <input type="text" name="eid" id="id_eid" class="form-control" required maxlength="20" value="{{ employee.eid }}"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Employee Name</label>
+                        <input type="text" name="ename" id="id_ename" class="form-control" required maxlength="100" value="{{ employee.ename }}"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Employee Email</label>
+                        <input type="email" name="eemail" id="id_eemail" class="form-control" required maxlength="254" value="{{ employee.eemail }}"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Employee Contact</label>
+                        <input type="text" name="econtact" id="id_econtact" class="form-control" required maxlength="15" value="{{ employee.econtact }}"/>
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/show" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-warning px-4">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

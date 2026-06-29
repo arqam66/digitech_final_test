@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary d-flex justify-content-between align-items-center">
+        <h4 class="mb-0"><i class="bi bi-list-ul me-2"></i>Employee Records</h4>
+        <a href="/emp" class="btn btn-light btn-sm">
+            <i class="bi bi-plus-circle me-1"></i>Add New
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Contact</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for employee in employees %}
+                    <tr>
+                        <td><span class="badge bg-secondary">{{ employee.eid }}</span></td>
+                        <td class="fw-semibold">{{ employee.ename }}</td>
+                        <td>{{ employee.eemail }}</td>
+                        <td>{{ employee.econtact }}</td>
+                        <td class="text-center action-icons">
+                            <a href="/edit/{{ employee.id }}" class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil-square"></i> Edit
+                            </a>
+                            <a href="/delete/{{ employee.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this employee?')">
+                                <i class="bi bi-trash"></i> Delete
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                            No employees found.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}
