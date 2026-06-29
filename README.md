@@ -27,14 +27,13 @@ A full-featured **Employee Management CRUD Application** built with Django and s
 | Frontend | Bootstrap 5.3 + Custom CSS |
 | Database | SQLite3 (default) / MySQL |
 | Design | Glassmorphism (backdrop-filter, rgba layering) |
+| Static Files | WhiteNoise |
+| WSGI Server | Gunicorn |
 
 ## Screenshots
 
-| Page | Description |
-|------|-------------|
-| `/show` | Employee records table with edit/delete actions |
-| `/emp` | Add new employee form |
-| `/edit/<id>` | Update existing employee details |
+### Employee Records Dashboard
+![Employee Records Dashboard](static/images/dashboard.png)
 
 ## Installation
 
@@ -50,10 +49,16 @@ A full-featured **Employee Management CRUD Application** built with Django and s
 git clone https://github.com/yourusername/Django-crud-application.git
 cd Django-crud-application
 
-# (Recommended) Create a virtual environment
-python -m venv venv
-venv\Scripts\activate    # Windows
-# source venv/bin/activate  # macOS/Linux
+# Create a virtual environment
+python -m venv .venv
+
+# Activate the virtual environment
+# Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+# Windows (CMD):
+.venv\Scripts\activate.bat
+# macOS/Linux:
+source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
