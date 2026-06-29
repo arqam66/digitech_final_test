@@ -165,7 +165,7 @@ body::before {
 
 .badge.bg-secondary {
     background: rgba(255, 255, 255, 0.15) !important;
-    color: #fff;
+    color: #000;
 }
 
 .btn {
@@ -350,6 +350,7 @@ h4 i {
     color: #065f46 !important;
 }
 
-.pill-badge {
-    color: #000 !important;
+.badge.pill-badge {
+    --bs-badge-color: #000;
+    color: #000;
 }
