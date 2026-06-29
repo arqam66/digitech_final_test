@@ -17,12 +17,23 @@ Including another URLconf
 from django.urls import path
 from . import views
 
-
+# URL patterns routing requests to views inside the 'employee' application
 urlpatterns = [
+    # Redirect base URL to the employee list view
     path('', views.show),
+    
+    # URL to handle adding new employees (both form display and POST handling)
     path('emp', views.emp),
+    
+    # URL to show the list of all employees
     path('show', views.show),
+    
+    # URL to show the edit form for a specific employee by ID
     path('edit/<int:id>', views.edit),
+    
+    # URL to handle updating an employee's details in the database by ID
     path('update/<int:id>', views.update),
+    
+    # URL to handle deleting an employee record by ID
     path('delete/<int:id>', views.destroy),
 ]
