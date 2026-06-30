@@ -55,11 +55,13 @@
                     <li class="nav-item"><a class="nav-link{% if 'patient' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'patient_list' %}">Patients</a></li>
                     <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == 'doctor_prescriptions' %} active{% endif %}" href="{% url 'doctor_prescriptions' %}">Scripts</a></li>
                     <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == 'doctor_medical_records' %} active{% endif %}" href="{% url 'doctor_medical_records' %}">Records</a></li>
+                    <li class="nav-item"><a class="nav-link{% if 'calendar' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'doctor_calendar' %}">Calendar</a></li>
                     {% elif user.role == 'Receptionist' %}
                     <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == 'receptionist_dashboard' %} active{% endif %}" href="{% url 'receptionist_dashboard' %}">Dashboard</a></li>
                     <li class="nav-item"><a class="nav-link{% if 'patient' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'patient_list' %}">Patients</a></li>
                     <li class="nav-item"><a class="nav-link{% if 'appointment' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'appointment_list' %}">Appointments</a></li>
                     <li class="nav-item"><a class="nav-link{% if 'doctor' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'doctor_list' %}">Doctors</a></li>
+                    <li class="nav-item"><a class="nav-link{% if 'calendar' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'doctor_calendar' %}">Calendar</a></li>
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav">
