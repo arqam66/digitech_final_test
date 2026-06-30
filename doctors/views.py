@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, UpdateView, DetailView
+from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
 from django.db.models import Q
 from .models import Doctor
 from .forms import DoctorForm
@@ -79,6 +79,17 @@ class DoctorUpdateView(AdminRequiredMixin, UpdateView):
         from django.contrib import messages
         messages.success(self.request, 'Doctor updated successfully.')
         return super().form_valid(form)
+
+
+class DoctorDeleteView(AdminRequiredMixin, DeleteView):
+    model = Doctor
+    template_name = 'doctors/doctor_confirm_delete.html'
+    success_url = reverse_lazy('doctor_list')
+
+    def delete(self, request, *args, **kwargs):
+        from django.contrib import messages
+        messages.success(request, 'Doctor deleted successfully.')
+        return super().delete(request, *args, **kwargs)
 
 
 class DoctorDetailView(LoginRequiredMixin, DetailView):

@@ -26,6 +26,9 @@
         <td>
             <a href="{% url 'patient_detail' patient.pk %}" class="btn btn-sm btn-outline-info">View</a>
             <a href="{% url 'patient_update' patient.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+            {% if user.role == 'Admin' %}
+            <a href="{% url 'patient_delete' patient.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this patient?');">Delete</a>
+            {% endif %}
         </td>
     </tr>
     {% empty %}

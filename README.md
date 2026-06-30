@@ -105,28 +105,110 @@ hospital/
 └── requirements.txt
 ```
 
+## ✅ Requirements Checklist
+
+| Requirement | Status |
+|------------|--------|
+| User Authentication (Login, Logout) | Implemented — custom `login_view`, `LogoutView`, password toggle on login form |
+| Role-Based Access Control | Implemented — Admin, Doctor, Receptionist roles with distinct dashboards and navigation |
+| CRUD Operations | Implemented — Create/Read/Update/Delete for Departments, Doctors, Patients, Appointments, Prescriptions, MedicalRecords |
+| Django Models with Relationships | Implemented — 8 models across 6 apps with OneToOne, ForeignKey, and cascading/deferred delete patterns |
+| Django Forms or ModelForms | Implemented — 7 ModelForms with Bootstrap widgets, inline formset for PrescriptionItems, double-booking validation |
+| Django Admin Panel | Implemented — All models registered with custom display, filters, search, and inlines |
+| Search and Filtering | Implemented — Search by name/ID/phone; filter by department/specialization/date/status |
+| Pagination | Implemented — 20 items per page on all list views with `paginate_by` |
+| Responsive User Interface | Implemented — Bootstrap 5.3 with mobile navbar, responsive tables, tab panels |
+| Form Validation | Implemented — Django built-in + custom `clean()` for double-booking prevention, `PrescriptionItemFormSet` validation |
+| Error Handling | Implemented — Custom `handler404` and `handler500` views, `get_object_or_404` throughout, try/except for doctor profile |
+| Proper Navigation | Implemented — Role-aware navbar with active-state highlighting, dropdown profile menu |
+| Clean Code Structure | Implemented — 6 Django apps with separation of concerns, CBVs and FBVs, reusable mixins, templatetags |
+| README Documentation | Complete — features, tech stack, quick start, credentials, project structure, ER diagram, presentation outline |
+
 ## 📊 Database Schema
 
-### Entity Relationships
+### Entity Relationship Diagram
 
 ```
-User ──1:1── Doctor ──N:1── Department (head: 1:N)
- │                              │
- │                              │
- Receptionist/Admin         Appointment ──N:1── Patient
-                                      │
-                                      ├── Prescription ──1:N── PrescriptionItem
-                                      └── MedicalRecord
+┌─────────────────────┐       ┌─────────────────────┐
+│        User         │ 1:1   │       Doctor        │
+│─────────────────────│───────│─────────────────────│
+│ username (unique)   │       │ user (OneToOne)     │──┐
+│ password            │       │ department (FK)     │  │
+│ email               │       │ specialization      │  │
+│ role (Admin/Doctor/ │       │ qualification       │  │
+│       Receptionist) │       │ experience_years    │  │
+│ phone_number        │       │ consultation_fee    │  │
+└─────────────────────┘       │ available_days      │  │
+                              │ available_time_start│  │
+                              │ available_time_end  │  │
+                              │ is_active           │  │
+                              └─────────┬───────────┘  │
+                                        │              │
+                          ┌─────────────┘              │
+                          │                            │
+                          ▼                            │
+              ┌─────────────────────┐       ┌──────────┘
+              │     Department      │       │ N:1
+              │─────────────────────│       │
+              │ name (unique)       │◄──────┘
+              │ description         │
+              │ head_of_department  │◄──1:N (head)
+              │     (FK→Doctor)     │
+              └─────────────────────┘
+
+┌─────────────────────┐       ┌─────────────────────┐
+│       Patient       │ 1:N   │     Appointment     │
+│─────────────────────│───────│─────────────────────│
+│ first_name          │       │ patient (FK)        │
+│ last_name           │       │ doctor (FK→Doctor)  │
+│ date_of_birth       │       │ department (FK)     │
+│ gender (M/F/O)      │       │ appointment_date    │
+│ blood_group         │       │ appointment_time    │
+│ phone_number        │       │ status (Pending/    │
+│ email               │       │   Confirmed/        │
+│ address             │       │   Completed/        │
+│ emergency_contact_  │       │   Cancelled)        │
+│   _name/_phone      │       │ reason_for_visit    │
+│ registered_date     │       │ notes               │
+└─────────────────────┘       └────────┬────────────┘
+       │ 1:N                           │ 1:N
+       │                               │
+       ▼                               ▼
+┌─────────────────────┐       ┌─────────────────────┐
+│    MedicalRecord    │       │    Prescription     │
+│─────────────────────│       │─────────────────────│
+│ patient (FK)        │       │ appointment (FK)    │
+│ doctor (FK)         │       │ patient (FK)        │
+│ appointment (FK)    │       │ doctor (FK)         │
+│ record_date         │       │ date_prescribed     │
+│ diagnosis           │       │ diagnosis           │
+│ treatment           │       │ notes               │
+│ test_results        │       └────────┬────────────┘
+│ notes               │                │ 1:N
+└─────────────────────┘                │
+                                        ▼
+                               ┌─────────────────────┐
+                               │  PrescriptionItem   │
+                               │─────────────────────│
+                               │ prescription (FK)   │
+                               │ medicine_name       │
+                               │ dosage              │
+                               │ frequency           │
+                               │ duration            │
+                               │ instructions        │
+                               └─────────────────────┘
 ```
 
 ### Key Design Decisions
 
 | Decision | Rationale |
 |----------|-----------|
-| `on_delete=CASCADE` | Tightly-dependent child records (e.g., PrescriptionItem → Prescription) |
-| `on_delete=SET_NULL` | Records that should survive deletion of a related entity (e.g., Appointments → Doctor) |
-| Circular reference (Department ↔ Doctor) | Resolved by adding `head_of_department` in a separate migration after Doctor model |
-| Custom User model | Set up before first migration to avoid migration complexity |
+| `on_delete=CASCADE` | Tightly-dependent child records (e.g., PrescriptionItem → Prescription, Appointment → Patient) |
+| `on_delete=SET_NULL` | Records that should survive deletion (e.g., Appointments → Doctor, Department → Doctor) |
+| Circular reference (Department ↔ Doctor) | Resolved by adding `head_of_department` FK in a separate migration (0002) after Doctor model exists |
+| Custom User model (`AUTH_USER_MODEL`) | Set up before first migration to avoid migration complexity; allows `role` field directly on User |
+| `available_days` as CharField | Stored as comma-separated string; split via custom template filter `record_extras.py` |
+| Inline Formset for PrescriptionItems | Enables dynamic add/remove of multiple medicine items per prescription on a single form |
 
 ## 📋 Presentation Outline (10–15 min)
 

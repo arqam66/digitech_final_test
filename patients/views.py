@@ -1,6 +1,7 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, UpdateView, DetailView
+from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
 from django.db.models import Q
 from .models import Patient
 from .forms import PatientForm
@@ -34,7 +35,6 @@ class PatientCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('patient_list')
 
     def form_valid(self, form):
-        from django.contrib import messages
         messages.success(self.request, 'Patient registered successfully.')
         return super().form_valid(form)
 
@@ -46,9 +46,23 @@ class PatientUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('patient_list')
 
     def form_valid(self, form):
-        from django.contrib import messages
         messages.success(self.request, 'Patient updated successfully.')
         return super().form_valid(form)
+
+
+class AdminRequiredMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.role == 'Admin'
+
+
+class PatientDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    model = Patient
+    template_name = 'patients/patient_confirm_delete.html'
+    success_url = reverse_lazy('patient_list')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Patient deleted successfully.')
+        return super().delete(request, *args, **kwargs)
 
 
 class PatientDetailView(LoginRequiredMixin, DetailView):

@@ -35,6 +35,9 @@
     <a href="{% url 'prescription_pdf' prescription.pk %}" class="btn btn-outline-danger">
         Download PDF
     </a>
+    {% if user.role == 'Admin' %}
+    <a href="{% url 'prescription_delete' prescription.pk %}" class="btn btn-danger">Delete</a>
+    {% endif %}
     <a href="{% url 'prescription_list' %}" class="btn btn-secondary">Back</a>
 </div>
 {% endblock %}

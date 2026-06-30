@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Medical Record #{{ medical_record.id }} - HMS{% endblock %}
+{% block content %}
+<h2>Medical Record #{{ medical_record.id }}</h2>
+<table class="table">
+    <tr><th>Patient</th><td>{{ medical_record.patient }}</td></tr>
+    <tr><th>Doctor</th><td>{{ medical_record.doctor|default:"—" }}</td></tr>
+    <tr><th>Date</th><td>{{ medical_record.record_date|date:"M d, Y H:i" }}</td></tr>
+    <tr><th>Diagnosis</th><td>{{ medical_record.diagnosis|linebreaks }}</td></tr>
+    {% if medical_record.treatment %}<tr><th>Treatment</th><td>{{ medical_record.treatment|linebreaks }}</td></tr>{% endif %}
+    {% if medical_record.test_results %}<tr><th>Test Results</th><td>{{ medical_record.test_results|linebreaks }}</td></tr>{% endif %}
+    {% if medical_record.notes %}<tr><th>Notes</th><td>{{ medical_record.notes|linebreaks }}</td></tr>{% endif %}
+</table>
+
+<div class="mt-3">
+    <a href="{% url 'medical_record_update' medical_record.pk %}" class="btn btn-primary">Edit</a>
+    {% if user.role == 'Admin' %}
+    <a href="{% url 'medical_record_delete' medical_record.pk %}" class="btn btn-danger">Delete</a>
+    {% endif %}
+    <a href="{% url 'medical_record_list' %}" class="btn btn-secondary">Back</a>
+</div>
+{% endblock %}
