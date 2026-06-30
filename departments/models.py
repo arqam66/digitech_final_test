@@ -9,5 +9,8 @@ class Department(models.Model):
         null=True, blank=True, related_name='headed_departments'
     )
 
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
         return self.name

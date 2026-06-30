@@ -20,5 +20,8 @@ class Doctor(models.Model):
     available_time_end = models.TimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
 
+    class Meta:
+        ordering = ['id']
+
     def __str__(self):
         return f"Dr. {self.user.get_full_name() or self.user.username}"
