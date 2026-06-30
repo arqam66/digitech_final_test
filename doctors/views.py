@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DetailView
 from django.db.models import Q
@@ -94,7 +95,11 @@ class DoctorDetailView(LoginRequiredMixin, DetailView):
 
 @login_required
 def doctor_appointments_view(request):
-    doctor = request.user.doctor
+    try:
+        doctor = request.user.doctor
+    except Doctor.DoesNotExist:
+        messages.error(request, 'Doctor profile not found.')
+        return redirect('dashboard_redirect')
     appointments = Appointment.objects.filter(doctor=doctor).select_related(
         'patient', 'department'
     ).order_by('-appointment_date', '-appointment_time')
@@ -108,7 +113,11 @@ def doctor_appointments_view(request):
 
 @login_required
 def doctor_prescriptions_view(request):
-    doctor = request.user.doctor
+    try:
+        doctor = request.user.doctor
+    except Doctor.DoesNotExist:
+        messages.error(request, 'Doctor profile not found.')
+        return redirect('dashboard_redirect')
     prescriptions = Prescription.objects.filter(doctor=doctor).select_related(
         'patient'
     ).order_by('-date_prescribed')
@@ -119,7 +128,11 @@ def doctor_prescriptions_view(request):
 
 @login_required
 def doctor_medical_records_view(request):
-    doctor = request.user.doctor
+    try:
+        doctor = request.user.doctor
+    except Doctor.DoesNotExist:
+        messages.error(request, 'Doctor profile not found.')
+        return redirect('dashboard_redirect')
     records = MedicalRecord.objects.filter(doctor=doctor).select_related(
         'patient'
     ).order_by('-record_date')

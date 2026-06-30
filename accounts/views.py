@@ -6,6 +6,7 @@ from appointments.models import Appointment
 from patients.models import Patient
 from doctors.models import Doctor
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def login_view(request):
@@ -60,7 +61,11 @@ def admin_dashboard(request):
 
 @login_required
 def doctor_dashboard(request):
-    doctor = request.user.doctor
+    try:
+        doctor = request.user.doctor
+    except ObjectDoesNotExist:
+        messages.error(request, 'Doctor profile not found.')
+        return redirect('dashboard_redirect')
     today = timezone.now().date()
     context = {
         'today_appointments': Appointment.objects.filter(

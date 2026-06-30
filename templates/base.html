@@ -22,9 +22,12 @@
                     <li class="nav-item"><a class="nav-link" href="{% url 'doctor_list' %}">Doctors</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'patient_list' %}">Patients</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'appointment_list' %}">Appointments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'prescription_list' %}">Prescriptions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'medical_record_list' %}">Records</a></li>
                     {% elif user.role == 'Doctor' %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'doctor_dashboard' %}">Dashboard</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'doctor_appointments' %}">My Appointments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'patient_list' %}">Patients</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'doctor_prescriptions' %}">Prescriptions</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'doctor_medical_records' %}">Medical Records</a></li>
                     {% elif user.role == 'Receptionist' %}
