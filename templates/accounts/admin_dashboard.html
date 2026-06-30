@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard - HMS{% endblock %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body text-center">
+                <h5 class="card-title">{{ total_patients }}</h5>
+                <p class="card-text">Total Patients</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body text-center">
+                <h5 class="card-title">{{ total_doctors }}</h5>
+                <p class="card-text">Total Doctors</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body text-center">
+                <h5 class="card-title">{{ today_appointments }}</h5>
+                <p class="card-text">Today's Appointments</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-body text-center">
+                <h5 class="card-title">{{ pending_appointments }}</h5>
+                <p class="card-text">Pending Appointments</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Quick Actions</div>
+            <div class="card-body">
+                <a href="{% url 'department_list' %}" class="btn btn-outline-primary m-1">Manage Departments</a>
+                <a href="{% url 'doctor_list' %}" class="btn btn-outline-primary m-1">Manage Doctors</a>
+                <a href="{% url 'patient_list' %}" class="btn btn-outline-primary m-1">Manage Patients</a>
+                <a href="{% url 'appointment_list' %}" class="btn btn-outline-primary m-1">Manage Appointments</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
