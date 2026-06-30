@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Prescription #{{ prescription.id }} - HMS{% endblock %}
+{% block content %}
+<h2>Prescription #{{ prescription.id }}</h2>
+<table class="table">
+    <tr><th>Patient</th><td>{{ prescription.patient }}</td></tr>
+    <tr><th>Doctor</th><td>{{ prescription.doctor }}</td></tr>
+    <tr><th>Date</th><td>{{ prescription.date_prescribed|date:"M d, Y H:i" }}</td></tr>
+    <tr><th>Diagnosis</th><td>{{ prescription.diagnosis|linebreaks }}</td></tr>
+    {% if prescription.notes %}<tr><th>Notes</th><td>{{ prescription.notes|linebreaks }}</td></tr>{% endif %}
+</table>
+
+<h4>Medicines</h4>
+<table class="table table-striped">
+    <thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>Instructions</th></tr></thead>
+    <tbody>
+    {% for item in prescription.items.all %}
+    <tr>
+        <td>{{ item.medicine_name }}</td>
+        <td>{{ item.dosage }}</td>
+        <td>{{ item.frequency }}</td>
+        <td>{{ item.duration }}</td>
+        <td>{{ item.instructions|default:"—" }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="text-muted">No medicine items.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<div class="mt-3">
+    {% if user.role == 'Doctor' %}
+    <a href="{% url 'prescription_update' prescription.pk %}" class="btn btn-primary">Edit</a>
+    {% endif %}
+    <a href="{% url 'prescription_list' %}" class="btn btn-secondary">Back</a>
+</div>
+{% endblock %}
