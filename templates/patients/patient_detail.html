@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}{{ patient }} - HMS{% endblock %}
+{% block content %}
+<h2>{{ patient.first_name }} {{ patient.last_name }}</h2>
+<div class="row">
+    <div class="col-md-4">
+        <table class="table">
+            <tr><th>Date of Birth</th><td>{{ patient.date_of_birth }}</td></tr>
+            <tr><th>Gender</th><td>{{ patient.gender }}</td></tr>
+            <tr><th>Blood Group</th><td>{{ patient.blood_group|default:"—" }}</td></tr>
+            <tr><th>Phone</th><td>{{ patient.phone_number }}</td></tr>
+            <tr><th>Email</th><td>{{ patient.email|default:"—" }}</td></tr>
+            <tr><th>Address</th><td>{{ patient.address|default:"—"|linebreaks }}</td></tr>
+            <tr><th>Emergency Contact</th><td>{{ patient.emergency_contact_name|default:"—" }} ({{ patient.emergency_contact_phone|default:"—" }})</td></tr>
+        </table>
+        <a href="{% url 'patient_update' patient.pk %}" class="btn btn-primary">Edit</a>
+    </div>
+    <div class="col-md-8">
+        <ul class="nav nav-tabs" id="patientTabs">
+            <li class="nav-item"><a class="nav-link active" href="#appointments" data-bs-toggle="tab">Appointments</a></li>
+            <li class="nav-item"><a class="nav-link" href="#prescriptions" data-bs-toggle="tab">Prescriptions</a></li>
+            <li class="nav-item"><a class="nav-link" href="#records" data-bs-toggle="tab">Medical Records</a></li>
+        </ul>
+        <div class="tab-content mt-3">
+            <div class="tab-pane active" id="appointments">
+                {% for apt in appointments %}
+                <div class="card mb-2">
+                    <div class="card-body d-flex justify-content-between">
+                        <span>{{ apt.appointment_date }} at {{ apt.appointment_time|time:"H:i" }} — {{ apt.doctor }}</span>
+                        <span class="badge bg-{% if apt.status == 'Completed' %}success{% elif apt.status == 'Cancelled' %}danger{% elif apt.status == 'Confirmed' %}info{% else %}warning{% endif %}">{{ apt.status }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No appointments.</p>
+                {% endfor %}
+            </div>
+            <div class="tab-pane" id="prescriptions">
+                {% for rx in prescriptions %}
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <strong>{{ rx.date_prescribed|date }}</strong> by {{ rx.doctor }}<br>
+                        Diagnosis: {{ rx.diagnosis }}
+                        <ul>{% for item in rx.items.all %}<li>{{ item.medicine_name }} — {{ item.dosage }}, {{ item.frequency }}, {{ item.duration }}</li>{% endfor %}</ul>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No prescriptions.</p>
+                {% endfor %}
+            </div>
+            <div class="tab-pane" id="records">
+                {% for rec in medical_records %}
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <strong>{{ rec.record_date|date }}</strong> by {{ rec.doctor }}<br>
+                        Diagnosis: {{ rec.diagnosis }}<br>
+                        {% if rec.treatment %}Treatment: {{ rec.treatment }}<br>{% endif %}
+                        {% if rec.test_results %}Tests: {{ rec.test_results }}{% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No medical records.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

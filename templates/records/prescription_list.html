@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Prescriptions - HMS{% endblock %}
+{% block content %}
+<h2>Prescriptions</h2>
+{% if prescriptions %}
+<div class="list-group mt-3">
+{% for rx in prescriptions %}
+    <div class="list-group-item">
+        <div class="d-flex justify-content-between">
+            <strong>{{ rx.patient }}</strong>
+            <span class="text-muted">{{ rx.date_prescribed|date:"M d, Y H:i" }}</span>
+        </div>
+        <p class="mb-1">Diagnosis: {{ rx.diagnosis }}</p>
+        {% if rx.items.all %}
+        <ul class="mb-0">
+        {% for item in rx.items.all %}
+            <li>{{ item.medicine_name }} — {{ item.dosage }}, {{ item.frequency }}, {{ item.duration }}</li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+        <a href="{% url 'prescription_detail' rx.pk %}" class="btn btn-sm btn-outline-info mt-2">View Details</a>
+    </div>
+{% endfor %}
+</div>
+{% else %}
+<p class="text-muted mt-3">No prescriptions found.</p>
+{% endif %}
+{% endblock %}

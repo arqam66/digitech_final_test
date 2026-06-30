@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Medical Records - HMS{% endblock %}
+{% block content %}
+<h2>Medical Records</h2>
+{% if medical_records %}
+<div class="list-group mt-3">
+{% for rec in medical_records %}
+    <div class="list-group-item">
+        <div class="d-flex justify-content-between">
+            <strong>{{ rec.patient }}</strong>
+            <span class="text-muted">{{ rec.record_date|date:"M d, Y H:i" }}</span>
+        </div>
+        <p class="mb-1">Diagnosis: {{ rec.diagnosis }}</p>
+        {% if rec.treatment %}<p class="mb-1">Treatment: {{ rec.treatment }}</p>{% endif %}
+        {% if rec.test_results %}<p class="mb-0">Tests: {{ rec.test_results }}</p>{% endif %}
+    </div>
+{% endfor %}
+</div>
+{% else %}
+<p class="text-muted mt-3">No medical records found.</p>
+{% endif %}
+{% endblock %}

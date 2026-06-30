@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Doctors - HMS{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+    <h2>Doctors</h2>
+    {% if user.role == 'Admin' %}
+    <a href="{% url 'doctor_create' %}" class="btn btn-primary">Add Doctor</a>
+    {% endif %}
+</div>
+
+<form method="get" class="row g-2 mt-3 mb-3">
+    <div class="col-auto"><input type="text" name="search" class="form-control" placeholder="Search..." value="{{ request.GET.search }}"></div>
+    <div class="col-auto">
+        <select name="department" class="form-select">
+            <option value="">All Departments</option>
+            {% for d in departments %}
+            <option value="{{ d.id }}" {% if request.GET.department == d.id|stringformat:'s' %}selected{% endif %}>{{ d.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <select name="specialization" class="form-select">
+            <option value="">All Specializations</option>
+            {% for s in specializations %}
+            <option value="{{ s }}" {% if request.GET.specialization == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Filter</button></div>
+</form>
+
+<table class="table table-striped">
+    <thead><tr><th>Name</th><th>Department</th><th>Specialization</th><th>Fee</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for doctor in doctors %}
+    <tr>
+        <td>{{ doctor.user.get_full_name|default:doctor.user.username }}</td>
+        <td>{{ doctor.department|default:"—" }}</td>
+        <td>{{ doctor.specialization }}</td>
+        <td>${{ doctor.consultation_fee }}</td>
+        <td>{% if doctor.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
+        <td>
+            <a href="{% url 'doctor_detail' doctor.pk %}" class="btn btn-sm btn-outline-info">View</a>
+            {% if user.role == 'Admin' %}
+            <a href="{% url 'doctor_update' doctor.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+            {% endif %}
+        </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6" class="text-muted">No doctors found.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% if page_obj.has_other_pages %}
+<nav>{% include 'pagination.html' %}</nav>
+{% endif %}
+{% endblock %}

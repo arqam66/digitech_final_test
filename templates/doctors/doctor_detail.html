@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}{{ doctor }} - HMS{% endblock %}
+{% block content %}
+<h2>{{ doctor }}</h2>
+<div class="row">
+    <div class="col-md-6">
+        <table class="table">
+            <tr><th>Department</th><td>{{ doctor.department|default:"—" }}</td></tr>
+            <tr><th>Specialization</th><td>{{ doctor.specialization }}</td></tr>
+            <tr><th>Qualification</th><td>{{ doctor.qualification }}</td></tr>
+            <tr><th>Experience</th><td>{{ doctor.experience_years }} years</td></tr>
+            <tr><th>Consultation Fee</th><td>${{ doctor.consultation_fee }}</td></tr>
+            <tr><th>Available Days</th><td>{{ doctor.available_days }}</td></tr>
+            <tr><th>Available Time</th><td>{{ doctor.available_time_start|time:"H:i" }} - {{ doctor.available_time_end|time:"H:i" }}</td></tr>
+            <tr><th>Status</th><td>{% if doctor.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td></tr>
+        </table>
+        {% if user.role == 'Admin' %}
+        <a href="{% url 'doctor_update' doctor.pk %}" class="btn btn-primary">Edit</a>
+        {% endif %}
+    </div>
+    <div class="col-md-6">
+        <h4>Recent Appointments</h4>
+        <ul class="list-group">
+        {% for apt in appointments %}
+            <li class="list-group-item d-flex justify-content-between">
+                {{ apt.patient }} - {{ apt.appointment_date }}
+                <span class="badge bg-{% if apt.status == 'Completed' %}success{% elif apt.status == 'Cancelled' %}danger{% else %}warning{% endif %}">{{ apt.status }}</span>
+            </li>
+        {% empty %}
+            <li class="list-group-item text-muted">No appointments yet.</li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
