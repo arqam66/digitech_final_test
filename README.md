@@ -1,67 +1,40 @@
-# Employee Management System
+# Hospital Management System
 
-![Django](https://img.shields.io/badge/django-3.x%20%7C%204.x%20%7C%205.x-success?logo=django)
-![Bootstrap](https://img.shields.io/badge/bootstrap-5.3-purple?logo=bootstrap)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Python](https://img.shields.io/badge/python-3.8%2B-blue?logo=python)
-[![Watch Video](https://img.shields.io/badge/Watch-Video-red?logo=youtube)](https://www.youtube.com/watch?v=i_Z8_e0N6OI)
-
-A full-featured **Employee Management CRUD Application** built with Django and styled with a modern **Glassmorphism** UI. Create, read, update, and delete employee records with ease.
-
-🎥 **[Watch Video Tutorial](https://www.youtube.com/watch?v=i_Z8_e0N6OI)**
-
----
+A Django-based hospital management web application built as a semester project. Supports three user roles (Admin, Doctor, Receptionist) with role-based dashboards, patient registration, appointment scheduling, prescriptions (with inline medicine items), and medical records.
 
 ## Features
 
-- **Create** — Add new employees with ID, name, email, and contact
-- **Read** — View all employee records in a sortable table
-- **Update** — Edit existing employee details
-- **Delete** — Remove employee records with confirmation
-- **Glassmorphism UI** — Modern frosted-glass design with smooth animations
-- **Responsive** — Fully mobile-friendly layout
-- **Admin Panel** — Django admin interface available at `/admin/`
+- **Role-Based Access Control** — Admin, Doctor, and Receptionist roles with per-role dashboards and navigation
+- **Patient Management** — Register, view, edit, and search patients; view full appointment and medical history per patient
+- **Doctor Management** — Add/edit doctors, assign to departments, set availability and consultation fees
+- **Department Management** — CRUD departments with assignable head of department
+- **Appointment Scheduling** — Book appointments with double-booking prevention; status flow: Pending → Confirmed → Completed/Cancelled
+- **Prescriptions** — Create prescriptions tied to completed appointments with inline medicine line-items (name, dosage, frequency, duration, instructions)
+- **Medical Records** — Log diagnosis, treatment, test results per visit; searchable per patient
+- **Search & Filtering** — Search patients by name/ID/phone; filter appointments by date/doctor/department/status; filter doctors by department/specialization
+- **Pagination** — All list views paginated (20 per page)
+- **Responsive UI** — Bootstrap 5, mobile-friendly
+- **Custom Error Pages** — 404 and 500 error handling
 
 ## Tech Stack
 
-| Layer  | Technology |
-|--------|------------|
-| Backend | Django 3.x+ |
-| Frontend | Bootstrap 5.3 + Custom CSS |
-| Database | SQLite3 (default) / MySQL |
-| Design | Glassmorphism (backdrop-filter, rgba layering) |
-| Static Files | WhiteNoise |
-| WSGI Server | Gunicorn |
-
-## Screenshots
-
-### Employee Records Dashboard
-![Employee Records Dashboard](static/images/dashboard.png)
+- Python 3.12
+- Django 6.0.6
+- SQLite
+- Bootstrap 5 (CDN)
+- HTML5, CSS3, vanilla JavaScript
 
 ## Installation
 
-### Prerequisites
-
-- Python 3.8+
-- pip
-
-### Setup
-
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/Django-crud-application.git
-cd Django-crud-application
+git clone <repo-url>
+cd hospital-management-system
 
-# Create a virtual environment
+# Create and activate a virtual environment
 python -m venv .venv
-
-# Activate the virtual environment
-# Windows (PowerShell):
-.venv\Scripts\Activate.ps1
-# Windows (CMD):
-.venv\Scripts\activate.bat
-# macOS/Linux:
-source .venv/bin/activate
+.venv\Scripts\activate   # Windows
+# source .venv/bin/activate   # macOS/Linux
 
 # Install dependencies
 pip install -r requirements.txt
@@ -69,97 +42,93 @@ pip install -r requirements.txt
 # Run migrations
 python manage.py migrate
 
-# Start the development server
+# Seed demo data
+python manage.py seed_data
+
+# Start the server
 python manage.py runserver
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
+Visit `http://127.0.0.1:8000/` to access the application.
 
-### MySQL (optional)
+## Demo Login Credentials
 
-Edit `settings.py` to use MySQL instead of SQLite3:
-
-```python
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'your_db_name',
-        'USER': 'your_user',
-        'PASSWORD': 'your_password',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
-}
-```
+| Role         | Username      | Password        |
+|--------------|---------------|-----------------|
+| Admin        | admin         | admin123        |
+| Doctor (1)   | doctor1       | doctor123       |
+| Doctor (2)   | doctor2       | doctor123       |
+| Doctor (3)   | doctor3       | doctor123       |
+| Receptionist | receptionist  | reception123    |
 
 ## Project Structure
 
 ```
-Django-crud-application/
-├── manage.py                     # Django CLI entry point
-├── requirements.txt              # Python dependencies
-├── static/
-│   └── css/
-│       └── style.css             # Glassmorphism custom styles
-├── templates/
-│   └── base.html                 # Base template (navbar, footer)
-├── DjangoJavaTpointCRUD/         # Project settings & root URLconf
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-└── employee/                     # Main CRUD app
-    ├── models.py                 # Employee model
-    ├── views.py                  # CRUD view functions
-    ├── forms.py                  # ModelForm for Employee
-    ├── urls.py                   # App URL routing
-    └── templates/
-        ├── home.html             # Dashboard visualization template
-        ├── index.html            # Create employee form
-        ├── show.html             # Employee list table
-        ├── edit.html             # Update employee form
-        └── confirm_delete.html   # Delete confirmation screen
+hospital/
+├── accounts/          # Custom User model, authentication, dashboards
+├── departments/       # Department CRUD
+├── doctors/           # Doctor CRUD, doctor-specific views
+├── patients/          # Patient CRUD
+├── appointments/      # Appointment scheduling
+├── records/           # Prescriptions (with inline items), Medical Records
+├── hospital/          # Project settings, URL configuration
+├── templates/         # All HTML templates (Bootstrap 5)
+│   ├── base.html      # Base template with role-aware navbar
+│   ├── registration/  # Login page
+│   ├── accounts/      # Role dashboards
+│   ├── departments/   # Department templates
+│   ├── doctors/       # Doctor templates
+│   ├── patients/      # Patient templates
+│   ├── appointments/  # Appointment templates
+│   └── records/       # Prescription & Medical Record templates
+├── static/            # Static files
+├── manage.py
+└── requirements.txt
 ```
 
-## API Endpoints
+## Database Schema
 
-| URL | Method | Description |
-|-----|--------|-------------|
-| `/` | GET | Redirect to employee list |
-| `/show` | GET | View all employees |
-| `/emp` | GET | Display add-employee form |
-| `/emp` | POST | Create a new employee |
-| `/edit/<id>` | GET | Display edit form |
-| `/update/<id>` | POST | Update employee record |
-| `/delete/<id>` | GET | Delete employee record |
-| `/admin/` | GET | Django admin panel |
+### Models and Relationships
 
-## Usage
+- **User** (custom, extends `AbstractUser`) — role (Admin/Doctor/Receptionist), phone_number
+- **Department** — name, description, head_of_department (FK → Doctor, nullable)
+- **Doctor** — user (OneToOne → User), department (FK → Department), specialization, qualification, experience_years, consultation_fee, available_days/times, is_active
+- **Patient** — first/last name, DOB, gender, blood_group, phone, email, address, emergency contact, registered_date
+- **Appointment** — patient (FK), doctor (FK), department (FK), date, time, status (Pending/Confirmed/Completed/Cancelled), reason, notes
+- **Prescription** — appointment (FK), patient (FK), doctor (FK), date, diagnosis, notes
+- **PrescriptionItem** — prescription (FK), medicine_name, dosage, frequency, duration, instructions
+- **MedicalRecord** — patient (FK), doctor (FK), appointment (FK, nullable), date, diagnosis, treatment, test_results, notes
 
-1. Navigate to **`/show`** to see all employees
-2. Click **Add New** to create an employee record
-3. Click **Edit** to modify an existing record
-4. Click **Delete** to remove a record (with confirmation)
+### Key Design Decisions
 
-## Development
+- `on_delete=CASCADE` for tightly-dependent child records (e.g., PrescriptionItem → Prescription)
+- `on_delete=SET_NULL` or `PROTECT` for records that should survive deletion of a related entity (e.g., Appointments → Doctor)
+- Circular reference between Department and Doctor handled by adding `head_of_department` in a separate migration
+- Custom User model set up before first migration to avoid migration complexity
 
-```bash
-# Collect static files
-python manage.py collectstatic
+## ER Diagram
 
-# Create superuser for admin panel
-python manage.py createsuperuser
-
-# Make migrations after model changes
-python manage.py makemigrations
-python manage.py migrate
+```
+User ──1:1── Doctor ──N:1── Department (head: 1:N)
+ │                              │
+ │                              │
+Receptionist/Admin         Appointment ──N:1── Patient
+                                      │
+                                      └── Prescription ──1:N── PrescriptionItem
+                                      └── MedicalRecord
 ```
 
-## License
+## Screenshots
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Screenshots of major modules are available in the `assets/` directory.
 
----
+## Presentation Outline (10-15 min)
 
-<p align="center">
-  Built with ❤️ by <strong>Arqam Hussain</strong>
-</p>
+1. **Introduction** (1 min) — Problem statement, project goals
+2. **Tech Stack & Architecture** (2 min) — Django, SQLite, Bootstrap; apps structure
+3. **Database Design** (2 min) — Models, relationships, key decisions
+4. **Authentication & RBAC** (2 min) — Custom User model, role-based views
+5. **Core Modules Demo** (5 min) — Walk through each module (Departments → Doctors → Patients → Appointments → Prescriptions → Records)
+6. **Search & Filtering** (1 min)
+7. **Challenges & Solutions** (2 min) — Circular reference handling, double-booking prevention
+8. **Q&A** (1 min)
