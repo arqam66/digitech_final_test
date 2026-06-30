@@ -139,3 +139,15 @@ def doctor_medical_records_view(request):
     return render(request, 'records/medical_record_list.html', {
         'medical_records': records,
     })
+
+
+@login_required
+def doctor_calendar(request):
+    doctors = Doctor.objects.filter(is_active=True).select_related('department', 'user')
+    for doc in doctors:
+        doc.day_list = [d.strip() for d in doc.available_days.split(',')] if doc.available_days else []
+    weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    return render(request, 'doctors/doctor_calendar.html', {
+        'doctors': doctors,
+        'weekdays': weekdays,
+    })

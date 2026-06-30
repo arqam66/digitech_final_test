@@ -80,6 +80,9 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard_redirect'
 LOGOUT_REDIRECT_URL = 'login'
 
+DEFAULT_FROM_EMAIL = 'noreply@hospital.com'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 MESSAGE_TAGS = {
     message_constants.DEBUG: 'debug',
     message_constants.INFO: 'info',

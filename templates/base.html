@@ -47,6 +47,8 @@
                     <li class="nav-item"><a class="nav-link{% if 'appointment' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'appointment_list' %}">Appointments</a></li>
                     <li class="nav-item"><a class="nav-link{% if 'prescription' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'prescription_list' %}">Prescriptions</a></li>
                     <li class="nav-item"><a class="nav-link{% if 'record' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'medical_record_list' %}">Records</a></li>
+                    <li class="nav-item"><a class="nav-link{% if 'report' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'patient_report' %}">Reports</a></li>
+                    <li class="nav-item"><a class="nav-link{% if 'calendar' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'doctor_calendar' %}">Calendar</a></li>
                     {% elif user.role == 'Doctor' %}
                     <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == 'doctor_dashboard' %} active{% endif %}" href="{% url 'doctor_dashboard' %}">Dashboard</a></li>
                     <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == 'doctor_appointments' %} active{% endif %}" href="{% url 'doctor_appointments' %}">My Appointments</a></li>

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Doctor Availability Calendar - HMS{% endblock %}
+{% block content %}
+<h2>Doctor Availability Calendar</h2>
+<div class="row mt-3">
+    {% for doctor in doctors %}
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>{{ doctor }}</strong>
+                <span class="badge bg-info">{{ doctor.department|default:"—" }}</span>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Specialization:</strong> {{ doctor.specialization }}</p>
+                <p class="mb-1"><strong>Time:</strong> {{ doctor.available_time_start|time:"H:i"|default:"—" }} — {{ doctor.available_time_end|time:"H:i"|default:"—" }}</p>
+                <p class="mb-1"><strong>Fee:</strong> ${{ doctor.consultation_fee }}</p>
+
+                <div class="mt-3">
+                    {% for d in weekdays %}
+                    <span class="badge {% if d in doctor.day_list %}bg-primary{% else %}bg-light text-muted border{% endif %} p-2 me-1 mb-1" style="min-width:32px;">
+                        {{ d|slice:":2" }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                {% if user.role == 'Receptionist' or user.role == 'Admin' %}
+                <a href="{% url 'appointment_create' %}" class="btn btn-sm btn-outline-primary">Book</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col"><p class="text-muted">No active doctors found.</p></div>
+    {% endfor %}
+</div>
+{% endblock %}

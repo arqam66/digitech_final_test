@@ -32,6 +32,9 @@
     {% if user.role == 'Doctor' %}
     <a href="{% url 'prescription_update' prescription.pk %}" class="btn btn-primary">Edit</a>
     {% endif %}
+    <a href="{% url 'prescription_pdf' prescription.pk %}" class="btn btn-outline-danger">
+        Download PDF
+    </a>
     <a href="{% url 'prescription_list' %}" class="btn btn-secondary">Back</a>
 </div>
 {% endblock %}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><style>
+    @page { size: A4; margin: 2cm; }
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; color: #333; }
+    h1 { font-size: 20px; color: #0d6efd; border-bottom: 2px solid #0d6efd; padding-bottom: 5px; }
+    .header { text-align: center; margin-bottom: 20px; }
+    .header h2 { margin: 0; color: #0d6efd; }
+    .header p { margin: 2px 0; color: #666; font-size: 11px; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .info-table td { padding: 4px 8px; }
+    .info-table td:first-child { font-weight: bold; width: 120px; color: #555; }
+    .items-table { width: 100%; border-collapse: collapse; }
+    .items-table th { background: #0d6efd; color: white; padding: 8px; text-align: left; font-size: 11px; }
+    .items-table td { padding: 8px; border-bottom: 1px solid #dee2e6; }
+    .items-table tr:nth-child(even) { background: #f8f9fa; }
+    .footer { position: fixed; bottom: 0; text-align: center; font-size: 10px; color: #999; width: 100%; }
+    .doctor-sign { margin-top: 40px; text-align: right; font-style: italic; }
+</style></head>
+<body>
+    <div class="header">
+        <h2>City Hospital</h2>
+        <p>123 Health Avenue, Medical District</p>
+        <p>Phone: (555) 123-4567 | Email: info@cityhospital.com</p>
+        <hr>
+    </div>
+    <h1>Prescription</h1>
+    <table class="info-table">
+        <tr><td>Patient:</td><td>{{ prescription.patient.first_name }} {{ prescription.patient.last_name }}</td></tr>
+        <tr><td>Doctor:</td><td>{{ prescription.doctor }}</td></tr>
+        <tr><td>Date:</td><td>{{ prescription.date_prescribed|date:"F d, Y" }}</td></tr>
+        <tr><td>Diagnosis:</td><td>{{ prescription.diagnosis }}</td></tr>
+        {% if prescription.notes %}<tr><td>Notes:</td><td>{{ prescription.notes }}</td></tr>{% endif %}
+    </table>
+
+    <table class="items-table">
+        <thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>Instructions</th></tr></thead>
+        <tbody>
+        {% for item in prescription.items.all %}
+        <tr>
+            <td>{{ item.medicine_name }}</td>
+            <td>{{ item.dosage }}</td>
+            <td>{{ item.frequency }}</td>
+            <td>{{ item.duration }}</td>
+            <td>{{ item.instructions|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="doctor-sign">
+        _________________________<br>
+        {{ prescription.doctor }}
+    </div>
+    <div class="footer">Generated on {% now "F d, Y H:i" %} | City Hospital Management System</div>
+</body>
+</html>

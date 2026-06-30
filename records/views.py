@@ -7,6 +7,10 @@ from django.forms import inlineformset_factory
 from django.contrib import messages
 from .models import Prescription, PrescriptionItem, MedicalRecord
 from .forms import PrescriptionForm, PrescriptionItemForm, MedicalRecordForm
+from .utils import render_pdf
+from django.http import HttpResponse
+from patients.models import Patient
+from appointments.models import Appointment
 
 
 PrescriptionItemFormSet = inlineformset_factory(
@@ -112,3 +116,36 @@ class MedicalRecordUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, 'Medical record updated successfully.')
         return super().form_valid(form)
+
+
+@login_required
+def prescription_pdf(request, pk):
+    prescription = get_object_or_404(Prescription, pk=pk)
+    pdf = render_pdf('records/prescription_pdf.html', {'prescription': prescription})
+    if pdf is None:
+        messages.error(request, 'Error generating PDF.')
+        return redirect('prescription_detail', pk=pk)
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="prescription_{pk}.pdf"'
+    return response
+
+
+@login_required
+def patient_report(request):
+    patients = Patient.objects.all()
+    patient_data = []
+    for p in patients:
+        patient_data.append({
+            'patient': p,
+            'appt_count': Appointment.objects.filter(patient=p).count(),
+            'rx_count': Prescription.objects.filter(patient=p).count(),
+            'rec_count': MedicalRecord.objects.filter(patient=p).count(),
+        })
+    context = {
+        'total_patients': Patient.objects.count(),
+        'total_appointments': Appointment.objects.count(),
+        'total_prescriptions': Prescription.objects.count(),
+        'total_records': MedicalRecord.objects.count(),
+        'patient_data': patient_data,
+    }
+    return render(request, 'records/patient_report.html', context)
