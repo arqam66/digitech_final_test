@@ -118,10 +118,6 @@ Receptionist/Admin         Appointment ──N:1── Patient
                                       └── MedicalRecord
 ```
 
-## Screenshots
-
-Screenshots of major modules are available in the `assets/` directory.
-
 ## Presentation Outline (10-15 min)
 
 1. **Introduction** (1 min) — Problem statement, project goals
