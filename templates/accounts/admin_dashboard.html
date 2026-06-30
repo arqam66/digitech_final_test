@@ -2,36 +2,64 @@
 {% block title %}Admin Dashboard - HMS{% endblock %}
 {% block content %}
 <h2>Admin Dashboard</h2>
-<div class="row mt-4">
+<div class="row mt-4 g-3">
     <div class="col-md-3">
-        <div class="card text-white bg-primary mb-3">
-            <div class="card-body text-center">
-                <h5 class="card-title">{{ total_patients }}</h5>
-                <p class="card-text">Total Patients</p>
+        <div class="card stat-card primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle text-muted mb-1">Total Patients</h6>
+                        <h2 class="card-title mb-0">{{ total_patients }}</h2>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0d6efd" viewBox="0 0 16 16"><path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card text-white bg-success mb-3">
-            <div class="card-body text-center">
-                <h5 class="card-title">{{ total_doctors }}</h5>
-                <p class="card-text">Total Doctors</p>
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle text-muted mb-1">Total Doctors</h6>
+                        <h2 class="card-title mb-0">{{ total_doctors }}</h2>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#198754" viewBox="0 0 16 16"><path d="M14 14.25v0c0-.88-1.079-2.147-3.035-3.075C10.935 10.95 10.943 10.947 10.93 10.85c.458-1.003.777-2.044.874-3.175.087-.672.026-1.327-.2-1.954l.02-.003C13.245 5.224 14 3.464 14 2.5c0-.828-.622-1.5-1.5-1.5-.012 0-.023.002-.035.003A2.622 2.622 0 0 0 10.58.277C10.113.098 9.592 0 9.04 0c-.89 0-1.694.228-2.293.618.384.143.739.334 1.058.551.393-.242.903-.387 1.44-.387.673 0 1.286.245 1.612.672.366.48.543 1.13.543 1.854 0 .815-.296 1.605-.703 2.258-.61 1.182-1.444 1.931-1.947 2.276C9.203 5.659 8.6 4.5 7.5 4.5S5.797 5.659 5.25 6.845c-.503-.345-1.337-1.094-1.947-2.276C2.896 4.105 2.6 3.315 2.6 2.5c0-.724.177-1.374.543-1.854C3.468.245 4.081 0 4.754 0c.537 0 1.047.145 1.44.387.319-.217.674-.408 1.058-.551A4.57 4.57 0 0 0 5.188.003C5.176.002 5.165 0 5.153 0 4.273 0 3.42.228 2.82.647 2.305.988 2 1.516 2 2.5c0 .964.755 2.724 2.377 3.621l.02.003c-.226.627-.287 1.282-.2 1.954.097 1.131.416 2.172.874 3.175-.014.097-.005.1.075.175C3.079 12.103 2 13.37 2 14.25v0a.75.75 0 0 0 1.5 0v0c0-.685.932-1.734 2.516-2.434C6.273 11.939 7.112 12 8 12s1.727-.061 2.484-.184C12.068 12.516 13 13.565 13 14.25v0a.75.75 0 0 0 1.5 0z"/></svg>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card text-white bg-warning mb-3">
-            <div class="card-body text-center">
-                <h5 class="card-title">{{ today_appointments }}</h5>
-                <p class="card-text">Today's Appointments</p>
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle text-muted mb-1">Today's Appointments</h6>
+                        <h2 class="card-title mb-0">{{ today_appointments }}</h2>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ffc107" viewBox="0 0 16 16"><path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card text-white bg-info mb-3">
-            <div class="card-body text-center">
-                <h5 class="card-title">{{ pending_appointments }}</h5>
-                <p class="card-text">Pending Appointments</p>
+        <div class="card stat-card info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle text-muted mb-1">Pending Appointments</h6>
+                        <h2 class="card-title mb-0">{{ pending_appointments }}</h2>
+                    </div>
+                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0dcaf0" viewBox="0 0 16 16"><path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.214 1.122.352l-.356.923zm1.685.65a7.01 7.01 0 0 0-1.26-.45l.271-.976c.453.126.89.298 1.302.52l-.313.908zm2.045 1.398a7 7 0 0 0-1.2-.96l.542-.823c.355.256.686.544.991.85l-.333.933zM12.6 4.2a7 7 0 0 0-.736-.72l.64-.768c.288.264.558.55.807.85l-.711.638zM14.556 8a6.97 6.97 0 0 0-.262-1.648l.978-.215A7.97 7.97 0 0 1 15.5 8h-1zM13.16 5.246a6.97 6.97 0 0 0-.974-1.299l.728-.697c.3.336.568.706.784 1.109l-.538.887z"/></svg>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
