@@ -4,8 +4,11 @@
 ![Bootstrap](https://img.shields.io/badge/bootstrap-5.3-purple?logo=bootstrap)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue?logo=python)
+[![Watch Video](https://img.shields.io/badge/Watch-Video-red?logo=youtube)](https://www.youtube.com/watch?v=i_Z8_e0N6OI)
 
 A full-featured **Employee Management CRUD Application** built with Django and styled with a modern **Glassmorphism** UI. Create, read, update, and delete employee records with ease.
+
+🎥 **[Watch Video Tutorial](https://www.youtube.com/watch?v=i_Z8_e0N6OI)**
 
 ---
 
@@ -110,9 +113,11 @@ Django-crud-application/
     ├── forms.py                  # ModelForm for Employee
     ├── urls.py                   # App URL routing
     └── templates/
+        ├── home.html             # Dashboard visualization template
         ├── index.html            # Create employee form
         ├── show.html             # Employee list table
-        └── edit.html             # Update employee form
+        ├── edit.html             # Update employee form
+        └── confirm_delete.html   # Delete confirmation screen
 ```
 
 ## API Endpoints
