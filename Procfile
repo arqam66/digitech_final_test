@@ -1,1 +1,1 @@
-web: gunicorn DjangoJavaTpointCRUD.wsgi --log-file -
+web: gunicorn hospital.wsgi --log-file -

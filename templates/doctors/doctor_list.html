@@ -43,6 +43,7 @@
             <a href="{% url 'doctor_detail' doctor.pk %}" class="btn btn-sm btn-outline-info">View</a>
             {% if user.role == 'Admin' %}
             <a href="{% url 'doctor_update' doctor.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+            <a href="{% url 'doctor_delete' doctor.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this doctor?');">Delete</a>
             {% endif %}
         </td>
     </tr>

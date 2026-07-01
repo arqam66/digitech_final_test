@@ -1,8 +1,8 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, UpdateView, DetailView
+from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
 from django.forms import inlineformset_factory
 from django.contrib import messages
 from .models import Prescription, PrescriptionItem, MedicalRecord
@@ -11,6 +11,11 @@ from .utils import render_pdf
 from django.http import HttpResponse
 from patients.models import Patient
 from appointments.models import Appointment
+
+
+class AdminRequiredMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.role == 'Admin'
 
 
 PrescriptionItemFormSet = inlineformset_factory(
@@ -82,6 +87,32 @@ def prescription_update(request, pk):
     })
 
 
+class PrescriptionDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    model = Prescription
+    template_name = 'records/prescription_confirm_delete.html'
+    success_url = reverse_lazy('prescription_list')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Prescription deleted successfully.')
+        return super().delete(request, *args, **kwargs)
+
+
+class MedicalRecordDetailView(LoginRequiredMixin, DetailView):
+    model = MedicalRecord
+    template_name = 'records/medical_record_detail.html'
+    context_object_name = 'medical_record'
+
+
+class MedicalRecordDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
+    model = MedicalRecord
+    template_name = 'records/medical_record_confirm_delete.html'
+    success_url = reverse_lazy('medical_record_list')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Medical record deleted successfully.')
+        return super().delete(request, *args, **kwargs)
+
+
 class MedicalRecordListView(LoginRequiredMixin, ListView):
     model = MedicalRecord
     template_name = 'records/medical_record_list.html'
@@ -106,6 +137,9 @@ class MedicalRecordCreateView(LoginRequiredMixin, CreateView):
         messages.success(self.request, 'Medical record created successfully.')
         return super().form_valid(form)
 
+    def get_success_url(self):
+        return reverse_lazy('medical_record_detail', kwargs={'pk': self.object.pk})
+
 
 class MedicalRecordUpdateView(LoginRequiredMixin, UpdateView):
     model = MedicalRecord
@@ -116,6 +150,9 @@ class MedicalRecordUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, 'Medical record updated successfully.')
         return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('medical_record_detail', kwargs={'pk': self.object.pk})
 
 
 @login_required

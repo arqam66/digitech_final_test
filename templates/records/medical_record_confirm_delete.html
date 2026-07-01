@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Delete Medical Record - HMS{% endblock %}
+{% block content %}
+<h2>Delete Medical Record</h2>
+<p>Are you sure you want to delete medical record #{{ object.id }}?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, delete</button>
+    <a href="{% url 'medical_record_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}
