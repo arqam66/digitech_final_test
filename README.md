@@ -24,10 +24,6 @@
     </a>
     <img src="https://img.shields.io/badge/status-production--ready-00C853" alt="Status: Production Ready">
     <img src="https://img.shields.io/badge/tests-playwright-45ba4b?logo=playwright&logoColor=white" alt="Playwright Tests">
-    <br>
-    <a href="Hospital_Management_System.pdf" target="_blank" rel="noopener noreferrer">
-      <img src="https://img.shields.io/badge/📄-Project_Report-2E86C1?logo=adobeacrobatreader&logoColor=white" alt="Project Report PDF">
-    </a>
   </p>
 
   <h3>
@@ -44,6 +40,8 @@
     <a href="#requirements-checklist">Checklist</a>
     <span> · </span>
     <a href="#database-schema">Schema</a>
+    <span> · </span>
+    <a href="Hospital_Management_System.pdf">Report</a>
   </h3>
 </div>
 
