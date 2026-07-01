@@ -47,32 +47,164 @@
 
 ## 📋 Table of Contents
 
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Quick Start](#quick-start)
-- [Demo Credentials](#demo-credentials)
-- [Project Structure](#project-structure)
-- [Architecture & Design Decisions](#architecture--design-decisions)
-- [Modules Reference](#modules-reference)
+- [Target Audience](#-target-audience)
+- [System Architecture](#-system-architecture)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Quick Start](#-quick-start)
+- [Demo Credentials](#-demo-credentials)
+- [Project Structure](#-project-structure)
+- [Request Data Flow](#-request-data-flow-mvt-pattern)
+- [End-to-End Patient Journey](#-end-to-end-patient-journey)
+- [Architecture & Design Decisions](#-architecture--design-decisions)
+- [Modules Reference](#-modules-reference)
   - [Accounts & Authentication](#accounts--authentication)
   - [Departments](#departments-module)
   - [Doctors](#doctors-module)
   - [Patients](#patients-module)
   - [Appointments](#appointments-module)
   - [Medical Records & Prescriptions](#medical-records--prescriptions)
-- [API Routes](#api-routes)
-- [Bonus Features](#bonus-features)
-- [Testing](#testing)
-- [Management Commands](#management-commands)
-- [Deployment](#deployment)
-- [Requirements Checklist](#requirements-checklist)
-- [Database Schema](#database-schema)
-- [Contributing](#contributing)
-- [License](#license)
+- [API Routes](#-api-routes)
+- [Bonus Features](#-bonus-features)
+- [Testing](#-testing)
+- [Management Commands](#-management-commands)
+- [Deployment](#-deployment)
+- [Requirements Checklist](#-requirements-checklist)
+- [Database Schema](#-database-schema)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## 🎯 Target Audience
+
+This system is designed for the following user groups in a hospital or clinical setting:
+
+| Persona | Role in System | Primary Goals |
+|---------|---------------|--------------|
+| **🏥 Hospital Administrator** | `Admin` | Oversee all operations — manage departments, doctors, staff accounts; view system-wide analytics; ensure data integrity across all modules |
+| **👨‍⚕️ Doctor / Physician** | `Doctor` | View daily appointment schedule; record diagnoses, prescriptions, and medical notes; access patient history; manage availability calendar |
+| **🖥️ Receptionist / Front Desk** | `Receptionist` | Register new patients; book, reschedule, and cancel appointments; manage front-desk scheduling; view today's patient queue |
+| **🧑‍💼 IT / System Admin** | `Admin` | Configure system settings; manage user accounts and role assignments; monitor system health through Django Admin panel |
+
+---
+
+## 🏗 System Architecture
+
+### High-Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           PRESENTATION LAYER                                │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │                 Bootstrap 5.3 UI (Templates)                          │  │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐   │  │
+│  │  │ Dashboards│ │  CRUD    │ │  Forms   │ │ Calendar │ │   PDF    │   │  │
+│  │  │  (Role)   │ │  Tables  │ │ (Inline) │ │   View   │ │   View   │   │  │
+│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘   │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                           APPLICATION LAYER                                 │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────┐ │
+│  │ accounts │ │departments│ │  doctors │ │ patients │ │appointm. │ │records │
+│  │          │ │          │ │          │ │          │ │          │ │     │ │
+│  │ • Auth   │ │ • CRUD   │ │ • CRUD   │ │ • CRUD   │ │ • CRUD   │ │ • Rx│ │
+│  │ • RBAC   │ │ • HOD    │ │ • Avail. │ │ • Search │ │ • Workfl.│ │ • MR│ │
+│  │ • Dashboard│ │  Mgmt   │ │ • Filter │ │ • Tabs   │ │ • Dbl-Bk │ │ • PDF│ │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘ └─────┘ │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                           DATA LAYER                                        │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │                         SQLite Database                                │  │
+│  │  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐    │  │
+│  │  │ User │ │Doctor│ │Dept. │ │Patient│ │Appt. │ │  Rx  │ │ RxItem│   │  │
+│  │  │      │ │      │ │      │ │      │ │      │ │      │ │       │   │  │
+│  │  │  8   │ │  11  │ │  3   │ │  12  │ │  9   │ │  5   │ │   5   │   │  │
+│  │  │fields│ │fields│ │fields│ │fields│ │fields│ │fields│ │fields │   │  │
+│  │  └──────┘ └──────┘ └──────┘ └──────┘ └──────┘ └──────┘ └──────┘    │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Application-to-Model Mapping
+
+```
+┌────────────┐    ┌─────────────┐
+│  accounts  │───▶│  User       │  (custom AbstractUser + role)
+└────────────┘    └─────────────┘
+                       │ 1:1
+                       ▼
+┌────────────┐    ┌─────────────┐    N:1    ┌──────────────┐
+│  doctors   │───▶│  Doctor     │◀──────────│  Department  │◀────┐
+└────────────┘    └─────────────┘           └──────────────┘     │
+                       │ 1:N         head_of_department (1:N)────┘
+                       │
+              ┌────────┼────────┐
+              │        │        │
+              ▼        ▼        ▼
+       ┌──────────┐ ┌──────┐ ┌──────────────┐
+       │Appointm. │ │  Rx  │ │MedicalRecord │
+       └──────────┘ └──────┘ └──────────────┘
+            │ 1:N      │ 1:N         │ 1:N
+            │          │             │
+            ▼          ▼             ▼
+       ┌──────────┐ ┌──────────────┐
+       │ Patient  │ │ Presc. Item  │
+       └──────────┘ └──────────────┘
+```
+
+### User Role Hierarchy & Access Control
+
+```
+                    ┌──────────────────────┐
+                    │   Unauthenticated    │
+                    │   (Login Page Only)  │
+                    └──────────┬───────────┘
+                               │ login
+                               ▼
+                    ┌──────────────────────┐
+                    │    Authenticated     │
+                    │   (Any Valid User)   │
+                    └──────────┬───────────┘
+                               │ redirect by role
+             ┌─────────────────┼──────────────────┐
+             ▼                 ▼                  ▼
+    ┌────────────────┐ ┌──────────────┐ ┌────────────────┐
+    │     Admin      │ │    Doctor    │ │  Receptionist  │
+    │                │ │              │ │                │
+    │ Full access    │ │ Doctor's own │ │ Patient CRUD   │
+    │ All CRUD       │ │ appointments │ │ Appointment CRUD│
+    │ All modules    │ │ Prescriptions│ │ Search/View    │
+    │ User mgmt     │ │ Med Records  │ │ ❌ Delete      │
+    │ System config  │ │ ❌ Admin     │ │ ❌ Doctor mgmt │
+    └────────────────┘ └──────────────┘ └────────────────┘
+```
 
 ---
 
 ## ✨ Features
+
+### Feature Module Map
+
+```
+                        ┌─────────────────────────────┐
+                        │    HOSPITAL MANAGEMENT       │
+                        │         SYSTEM              │
+                        └─────────────┬───────────────┘
+                                      │
+            ┌────────────┬────────────┼────────────┬────────────┐
+            ▼            ▼            ▼            ▼            ▼
+    ┌────────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
+    │  AUTH &    │ │ MASTER   │ │ CLINICAL │ │  REPORTS │ │  UTILS   │
+    │   RBAC     │ │ DATA     │ │  MODULES │ │ & ANALYT.│ │          │
+    ├────────────┤ ├──────────┤ ├──────────┤ ├──────────┤ ├──────────┤
+    │ • Login    │ │ • Dept.  │ │ • Appt.  │ │ • Patient│ │ • PDF    │
+    │ • Logout   │ │ • Doctor │ │ • Presc. │ │   Report │ │   Gen.   │
+    │ • 3 Roles  │ │ • Patient│ │ • MedRec │ │ • Doctor │ │ • Email  │
+    │ • Dashboard│ │   CRUD   │ │ • Calend.│ │   Dashbd │ │   Remind.│
+    │ • Redirect │ │ • Search │ │ • Status │ │ • System │ │ • Paginat│
+    └────────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘
+```
 
 ### Core Modules
 
@@ -170,90 +302,317 @@ Open **http://127.0.0.1:8000/** in your browser. You will be redirected to the l
 
 ## 📁 Project Structure
 
+### Feature-to-Directory Layout
+
+```
+  FEATURE                              DJANGO APP / FILE            PROVIDES
+  ─────────────────────────────────────────────────────────────────────────────
+  🔐 Authentication & Role Control   accounts/              Login, logout, 3 role dashboards
+  🏢 Department Management            departments/           CRUD + Head of Department
+  👨‍⚕️ Doctor Profiles & Calendar     doctors/               CRUD, availability, weekly calendar
+  👥 Patient Registration & History   patients/              CRUD, tabs, search
+  📅 Appointment Scheduling           appointments/          CRUD, status workflow, reminders
+  💊 Prescriptions & Medical Records  records/               CRUD, inline formset, PDF
+  ⚙️ Project Configuration           hospital/              Settings, root URLs, error pages
+  🎨 UI Templates                     templates/             base.html, pagination, error pages
+  📄 Static Assets                    static/                CSS, JS, images
+  🧪 E2E Testing                      check_all.py           Playwright automated tests
+  🐳 Deployment                       Procfile, runtime.txt  Gunicorn WSGI, Python version
+```
+
+### File Tree with Annotations
+
 ```
 hospital/
-├── accounts/                          # Custom User model, authentication, dashboards
-│   ├── management/commands/
-│   │   └── seed_data.py               # Demo data seeder
-│   ├── migrations/
-│   ├── templates/accounts/            # Role-specific dashboards
-│   ├── admin.py                       # CustomUserAdmin registration
-│   ├── models.py                      # User model (AbstractUser + role field)
-│   ├── urls.py                        # Auth & dashboard routing
-│   └── views.py                       # Login/logout, role-specific dashboards
 │
-├── departments/                       # Department CRUD
-│   ├── migrations/
-│   ├── templates/departments/
-│   ├── admin.py
-│   ├── forms.py                       # DepartmentForm
-│   ├── models.py                      # Department (name, description, head)
-│   ├── urls.py
-│   └── views.py                       # ListView, CreateView, UpdateView, DeleteView
+├── 📁 accounts/                          🔐 AUTHENTICATION & AUTHORIZATION
+│   ├── 📁 management/commands/
+│   │   └── 📄 seed_data.py               → python manage.py seed_data (idempotent demo seeder)
+│   ├── 📁 migrations/
+│   │   └── 📄 0001_initial.py            → Initial User model migration
+│   ├── 📁 templates/accounts/
+│   │   ├── 📄 admin_dashboard.html       → KPI cards: patients, doctors, today's appointments
+│   │   ├── 📄 doctor_dashboard.html      → Personal stats: my appointments, patient count
+│   │   └── 📄 receptionist_dashboard.html → Front-desk: today's schedule, quick actions
+│   ├── 📄 admin.py                       → CustomUserAdmin (role filter, fieldset)
+│   ├── 📄 models.py                      → User(AbstractUser) + role, phone_number
+│   ├── 📄 urls.py                        → 6 URL routes (login, logout, 3 dashboards, redirect)
+│   └── 📄 views.py                       → login_view, logout_view, 3 role-specific dashboards
 │
-├── doctors/                           # Doctor profiles & management
-│   ├── migrations/
-│   ├── templates/doctors/             # List, form, detail, calendar, delete confirm
-│   ├── admin.py
-│   ├── forms.py                       # DoctorForm
-│   ├── models.py                      # Doctor (user, department, availability, fee)
-│   ├── urls.py
-│   └── views.py                       # CRUD + doctor-specific views + calendar
+├── 📁 departments/                       🏢 DEPARTMENT MANAGEMENT
+│   ├── 📁 templates/departments/
+│   │   ├── 📄 department_list.html       → Paginated table with edit/delete (admin)
+│   │   ├── 📄 department_form.html       → Create/edit form
+│   │   └── 📄 department_confirm_delete.html → Confirmation prompt
+│   ├── 📄 admin.py                       → DepartmentAdmin (search by name)
+│   ├── 📄 forms.py                       → DepartmentForm (ModelForm)
+│   ├── 📄 models.py                      → Department(name unique, description, head FK→Doctor)
+│   ├── 📄 urls.py                        → 4 CRUD routes
+│   └── 📄 views.py                       → ListView, CreateView, UpdateView, DeleteView
 │
-├── patients/                          # Patient management
-│   ├── migrations/
-│   ├── templates/patients/            # List, form, detail (tabs), delete confirm
-│   ├── admin.py
-│   ├── forms.py                       # PatientForm
-│   ├── models.py                      # Patient (demographics, contact, emergency)
-│   ├── urls.py
-│   └── views.py                       # CRUD with role-restricted delete
+├── 📁 doctors/                           👨‍⚕️ DOCTOR PROFILES & SCHEDULING
+│   ├── 📁 templates/doctors/
+│   │   ├── 📄 doctor_list.html           → Filterable table (dept, specialization, search)
+│   │   ├── 📄 doctor_form.html           → Full profile form with availability
+│   │   ├── 📄 doctor_detail.html         → Profile info + recent appointments
+│   │   ├── 📄 doctor_calendar.html       → Weekly grid view for all active doctors
+│   │   └── 📄 doctor_confirm_delete.html → Confirmation prompt
+│   ├── 📄 admin.py                       → DoctorAdmin (filters, search)
+│   ├── 📄 forms.py                       → DoctorForm (ModelForm)
+│   ├── 📄 models.py                      → Doctor(user O2O, dept FK, specialization, fee, availability)
+│   ├── 📄 urls.py                        → 9 routes (CRUD + 4 doctor-specific + calendar)
+│   └── 📄 views.py                       → CRUD + doctor-specific filtered views + calendar
 │
-├── appointments/                      # Appointment scheduling
-│   ├── management/commands/
-│   │   └── send_reminders.py          # Email reminder command
-│   ├── migrations/
-│   ├── templates/appointments/
-│   ├── admin.py
-│   ├── forms.py                       # AppointmentForm (with double-booking validation)
-│   ├── models.py                      # Appointment (patient, doctor, date, status)
-│   ├── urls.py
-│   └── views.py                       # CRUD + status transition views
+├── 📁 patients/                          👥 PATIENT REGISTRATION & HISTORY
+│   ├── 📁 templates/patients/
+│   │   ├── 📄 patient_list.html          → Searchable table with pagination
+│   │   ├── 📄 patient_form.html          → Full registration form (demographics + emergency)
+│   │   ├── 📄 patient_detail.html        → Info + 3 Bootstrap tabs (Appts, Rx, MedRecords)
+│   │   └── 📄 patient_confirm_delete.html → Warning about cascading deletions
+│   ├── 📄 admin.py                       → PatientAdmin (gender/blood group filters, search)
+│   ├── 📄 forms.py                       → PatientForm (ModelForm)
+│   ├── 📄 models.py                      → Patient(name, DOB, gender, blood, contact, emergency)
+│   ├── 📄 urls.py                        → 5 CRUD routes
+│   └── 📄 views.py                       → CRUD (delete restricted to Admin)
 │
-├── records/                           # Prescriptions & Medical Records
-│   ├── migrations/
-│   ├── templatetags/
-│   │   └── record_extras.py           # Custom template filters (split)
-│   ├── templates/records/             # Prescription + MedicalRecord CRUD + PDF
-│   ├── admin.py
-│   ├── forms.py                       # PrescriptionForm, PrescriptionItemForm, MedicalRecordForm
-│   ├── models.py                      # Prescription, PrescriptionItem, MedicalRecord
-│   ├── urls.py
-│   ├── utils.py                       # PDF rendering utility (xhtml2pdf)
-│   └── views.py                       # CRUD + inline formset + PDF generation
+├── 📁 appointments/                      📅 APPOINTMENT SCHEDULING & WORKFLOW
+│   ├── 📁 management/commands/
+│   │   └── 📄 send_reminders.py          → python manage.py send_reminders [--dry-run]
+│   ├── 📁 templates/appointments/
+│   │   ├── 📄 appointment_list.html      → Filterable table (date, doctor, dept, status)
+│   │   ├── 📄 appointment_form.html      → Booking form with double-booking validation
+│   │   ├── 📄 appointment_detail.html    → Status badge + action buttons (confirm/complete/cancel)
+│   │   └── 📄 appointment_confirm_delete.html → Confirmation prompt
+│   ├── 📄 admin.py                       → AppointmentAdmin (status/date/dept filters, date_hierarchy)
+│   ├── 📄 forms.py                       → AppointmentForm with custom clean() for double-booking
+│   ├── 📄 models.py                      → Appointment(patient FK, doctor FK, date, time, status)
+│   ├── 📄 urls.py                        → 8 routes (CRUD + 3 status transitions)
+│   └── 📄 views.py                       → CRUD + confirm/complete/cancel action views
 │
-├── hospital/                          # Django project configuration
-│   ├── settings.py                    # Installed apps, middleware, templates, DB, auth
-│   ├── urls.py                        # Root URL configuration + error handlers
-│   ├── wsgi.py                        # WSGI application entrypoint
-│   └── views.py                       # Custom 404/500 error handlers
+├── 📁 records/                           💊 PRESCRIPTIONS & MEDICAL RECORDS
+│   ├── 📁 templatetags/
+│   │   └── 📄 record_extras.py           → Custom {% split %} filter for available_days
+│   ├── 📁 templates/records/
+│   │   ├── 📄 prescription_list.html     → Table with patient, diagnosis, items count
+│   │   ├── 📄 prescription_form.html     → Form + inline formset (dynamic medicine rows)
+│   │   ├── 📄 prescription_detail.html   → Full prescription + Download PDF button
+│   │   ├── 📄 prescription_pdf.html      → PDF-only template (letterhead, table, signature)
+│   │   ├── 📄 prescription_confirm_delete.html → Confirmation prompt
+│   │   ├── 📄 medical_record_list.html   → Filterable list with diagnosis/treatment/tests
+│   │   ├── 📄 medical_record_form.html   → Create/edit form
+│   │   ├── 📄 medical_record_detail.html → Full detail view
+│   │   ├── 📄 medical_record_confirm_delete.html → Confirmation prompt
+│   │   └── 📄 patient_report.html        → Summary stats: patients, appts, Rx, records
+│   ├── 📄 admin.py                       → PrescriptionAdmin + PrescriptionItemInline, MedicalRecordAdmin
+│   ├── 📄 forms.py                       → 3 ModelForms + PrescriptionItemFormSet (inlineformset_factory)
+│   ├── 📄 models.py                      → Prescription, PrescriptionItem, MedicalRecord
+│   ├── 📄 urls.py                        → 12 routes (6 per module)
+│   ├── 📄 utils.py                       → render_pdf() using xhtml2pdf
+│   └── 📄 views.py                       → CRUD + inline formset handling + PDF generation
 │
-├── templates/                         # Global templates
-│   ├── base.html                      # Base layout (role-aware navbar, messages, footer)
-│   ├── pagination.html                # Reusable pagination partial
-│   ├── 404.html                       # Custom 404 error page
-│   ├── 500.html                       # Custom 500 error page
-│   └── registration/
-│       └── login.html                 # Login form with show/hide password toggle
+├── 📁 hospital/                          ⚙️ PROJECT CONFIGURATION
+│   ├── 📄 settings.py                    → 60+ settings: 6 apps, SQLite, auth_user_model, email, etc.
+│   ├── 📄 urls.py                        → Root URLconf: includes 6 apps + admin + error handlers
+│   ├── 📄 wsgi.py                        → WSGI entrypoint for Gunicorn
+│   └── 📄 views.py                       → Custom handler404() and handler500()
 │
-├── static/                            # Static files (CSS, JS, images)
-├── check_all.py                       # Playwright end-to-end test script
-├── manage.py                          # Django management script
-├── requirements.txt                   # Python dependencies
-├── runtime.txt                        # Python runtime version (python-3.12.9)
-├── Procfile                           # Gunicorn WSGI deployment config
-└── .gitignore
+├── 📁 templates/                         🎨 GLOBAL UI TEMPLATES
+│   ├── 📄 base.html                      → Role-aware navbar (Bootstrap 5.3), messages, footer
+│   ├── 📄 pagination.html                → Reusable pagination: First/Prev/Next/Last
+│   ├── 📄 404.html                       → "Page Not Found" with navigation links
+│   ├── 📄 500.html                       → "Server Error" with fallback links
+│   └── 📁 registration/
+│       └── 📄 login.html                 → Login form with show/hide password toggle
+│
+├── 📁 static/                            📦 STATIC ASSETS
+│
+├── 📄 check_all.py                       🧪 Playwright E2E test suite (41+ test scenarios)
+├── 📄 manage.py                          🐍 Django management entrypoint
+├── 📄 requirements.txt                   📋 Python dependencies
+├── 📄 runtime.txt                        🐍 Python version constraint (3.12.9)
+├── 📄 Procfile                           🐳 Gunicorn WSGI deploy config
+└── 📄 .gitignore
 ```
+
+---
+
+## ⚡ Request Data Flow (MVT Pattern)
+
+Every user action in the system follows Django's Model-View-Template (MVT) architecture. Below is the complete request lifecycle for a typical operation (e.g., creating a prescription):
+
+```
+  USER ACTION                          DJANGO REQUEST LIFECYCLE
+  ════════════════════════════════════════════════════════════════════════
+
+  Browser / Form Submit
+        │
+        ▼
+  ┌──────────────────────────────────────────────────────────────────┐
+  │                     URL DISPATCHER                               │
+  │  hospital/urls.py → records/urls.py                              │
+  │  MATCH: /records/prescriptions/create/                           │
+  │  → routes to records/views.py:prescription_create               │
+  └──────────────────────────────────────────────────────────────────┘
+        │
+        ▼
+  ┌──────────────────────────────────────────────────────────────────┐
+  │                     VIEW (Controller)                            │
+  │  records/views.py:prescription_create()                          │
+  │                                                                  │
+  │  Step 1: Check authentication & authorization                   │
+  │  Step 2: Fetch related data (patients, doctors, appointments)    │
+  │  Step 3: Instantiate PrescriptionForm + PrescriptionItemFormSet  │
+  │  Step 4: Validate on POST → if valid, save model instance        │
+  │  Step 5: Redirect to detail view on success                      │
+  └──────────────────────────────────────────────────────────────────┘
+        │
+        ├──────────────────────────────────┐
+        ▼                                  ▼
+  ┌────────────────────┐       ┌────────────────────────┐
+  │      MODEL         │       │        FORM            │
+  │  records/models.py │       │  records/forms.py      │
+  │                    │       │                        │
+  │  Prescription      │       │  PrescriptionForm      │
+  │  ├── appointment   │       │  ├── appointment (FK)  │
+  │  ├── patient       │       │  ├── patient (FK)      │
+  │  ├── doctor        │       │  ├── doctor (FK)       │
+  │  ├── diagnosis     │       │  ├── diagnosis (Text)  │
+  │  └── notes         │       │  └── notes (Text)      │
+  │                    │       │                        │
+  │  PrescriptionItem  │       │  PrescriptionItemForm  │
+  │  ├── medicine_name │       │  ├── medicine_name     │
+  │  ├── dosage        │       │  ├── dosage            │
+  │  ├── frequency     │       │  ├── frequency         │
+  │  ├── duration      │       │  ├── duration          │
+  │  └── instructions  │       │  └── instructions      │
+  │                    │       │                        │
+  │  SQLite: INSERT    │       │  PrescriptionItemFormSet│
+  │  INTO prescriptions│       │  (inlineformset_factory,│
+  │  INTO rx_items     │       │   extra=3, can_delete) │
+  └────────────────────┘       └────────────────────────┘
+        │                                │
+        └──────────────┬─────────────────┘
+                       ▼
+  ┌──────────────────────────────────────────────────────────────────┐
+  │                   TEMPLATE (Rendering)                           │
+  │                                                                  │
+  │  GET request  → prescription_form.html                           │
+  │                  ├── Bootstrap 5.3 form controls                 │
+  │                  ├── Inline formset table for medicine items     │
+  │                  ├── Dynamic add/remove via JavaScript           │
+  │                  └── CSRF token, action URL                      │
+  │                                                                  │
+  │  POST success  → Redirect to prescription_detail.html            │
+  │                  ├── Patient info, doctor, date                  │
+  │                  ├── Medicine items table                        │
+  │                  └── Download PDF button                         │
+  └──────────────────────────────────────────────────────────────────┘
+        │
+        ▼
+  Browser Response (HTML page or PDF)
+```
+
+This pattern is repeated consistently across all 6 apps, with the following variations:
+
+| App | Primary View Pattern | Distinctive Feature |
+|-----|---------------------|-------------------|
+| **accounts** | Function-Based Views | Login/logout session management |
+| **departments** | Class-Based Views (CRUD) | Admin-only mixin protection |
+| **doctors** | Mixed CBV + FBV | Doctor-specific filtered queries |
+| **patients** | Class-Based Views (CRUD) | Tabbed detail template |
+| **appointments** | Class-Based Views + FBV actions | Status transition endpoints + double-booking `clean()` |
+| **records** | Function-Based Views (with inline formsets) | Formset handling + PDF generation |
+
+---
+
+## 🔄 End-to-End Patient Journey
+
+Below is the complete lifecycle of a patient within the system — from first registration to receiving a prescription — showing exactly which modules, views, and templates are involved at each step.
+
+```
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                       PATIENT LIFECYCLE                                 │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  STEP 1: PATIENT REGISTRATION
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  Receptionist/Doctor logs in          accounts/views.py:login_view  │
+  │  → Clicks "Register Patient"          template: patient_form.html   │
+  │  → Fills: name, DOB, gender, blood,   patients/forms.py:PatientForm │
+  │    phone, email, address, emergency   patients/views.py:create_view  │
+  │  → Submits → Patient record created   patients/models.py:Patient     │
+  └──────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+  STEP 2: APPOINTMENT BOOKING
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  Receptionist/Doctor selects patient  appointments/forms.py:ApptForm │
+  │  → Picks department, doctor, date,    appointments/views.py:create   │
+  │    time slot, reason for visit        appointments/models.py:Appt.   │
+  │  → Double-booking check passes        AppointmentForm.clean()         │
+  │  → Appointment created (Pending)      templates: appointment_form    │
+  └──────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+  STEP 3: APPOINTMENT CONFIRMATION
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  Admin/Receptionist confirms           appointments/views.py:confirm │
+  │  → Status: Pending → Confirmed        POST /appointments/<id>/confirm│
+  │  → Patient can now receive care       template: appointment_detail  │
+  └──────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+  STEP 4: DOCTOR VISIT
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  Doctor logs in → sees appointment    accounts/views.py:doctor_dash  │
+  │  → Marks as Completed                 appointments/views.py:complete │
+  │  → Status: Confirmed → Completed      POST /appointments/<id>/compl. │
+  └──────────────────────────────────────────────────────────────────────┘
+                                      │
+                         ┌────────────┼────────────┐
+                         ▼            ▼            ▼
+  STEP 5a:               │ STEP 5b:   │ STEP 5c:   │
+  PRESCRIPTION           │ MEDICAL    │ PATIENT    │
+                         │ RECORD     │ REPORT     │
+  ┌──────────────────┐   ┌─────────┐  ┌─────────┐  │
+  │ Doctor creates   │   │ Doctor  │  │ Any role │  │
+  │ prescription     │   │ logs    │  │ views    │  │
+  │ with inline      │   │ diagno- │  │ patient  │  │
+  │ medicine items   │   │ sis,    │  │ summary  │  │
+  │                   │   │ treatm. │  │ with all │  │
+  │ records/views.py  │   │ tests   │  │ counts   │  │
+  │ → prescription_   │   │          │  │          │  │
+  │   create          │   │ records/ │  │ records/ │  │
+  │                   │   │ views.py │  │ views.py │  │
+  │ PrescriptionForm  │   │ → create │  │ → report │  │
+  │ + ItemFormSet     │   │          │  │          │  │
+  └────────┬─────────┘   └──────────┘  └──────────┘  │
+           │                                          │
+           ▼                                          │
+  STEP 6: PDF DOWNLOAD                                │
+  ┌─────────────────────────────────────────────┐     │
+  │  Any role views prescription detail         │     │
+  │  → Clicks "Download PDF"                    │     │
+  │  → xhtml2pdf renders prescription_pdf.html  │     │
+  │  → PDF includes: letterhead, medicine       │     │
+  │    table, doctor signature area             │     │
+  │  records/utils.py:render_pdf()              │     │
+  └─────────────────────────────────────────────┘     │
+                                                      │
+                      ◄────────────────────────────────┘
+```
+
+### End-to-End Scenario Walkthrough
+
+| Step | Action | Actor | Module | Key Files |
+|------|--------|-------|--------|-----------|
+| 1 | Patient walks in → Receptionist registers them | Receptionist | Patients | `patients/views.py`, `patient_form.html` |
+| 2 | Receptionist schedules a doctor appointment | Receptionist | Appointments | `appointments/views.py`, `appointment_form.html` |
+| 3 | Admin confirms the appointment | Admin | Appointments | `appointments/views.py:confirm` |
+| 4 | Doctor marks appointment as Completed | Doctor | Appointments | `appointments/views.py:complete` |
+| 5a | Doctor creates prescription with medicines | Doctor | Records | `records/views.py`, `prescription_form.html`, `PrescriptionItemFormSet` |
+| 5b | Doctor logs medical record (diagnosis + treatment) | Doctor | Records | `records/views.py`, `medical_record_form.html` |
+| 6 | Staff downloads prescription PDF | Any | Records | `records/utils.py`, `prescription_pdf.html` |
 
 ---
 
@@ -327,10 +686,49 @@ Prescription (1:N) → PrescriptionItem
 ### Appointments Module
 
 - **Access**: All authenticated users with role-based query filtering (doctors see only their own)
-- **Status Workflow**: `Pending → Confirmed → Completed | Cancelled` (one-directional transitions enforced via distinct action views)
 - **Double-Booking Prevention**: Custom `AppointmentForm.clean()` checks for existing appointments with the same doctor on the same date and time
 - **Filtering**: By patient name, appointment date, doctor, department, and status
 - **Status Actions**: Dedicated URL endpoints for `confirm`, `complete`, and `cancel` transitions
+
+#### Appointment Status Lifecycle
+
+```
+                    ┌──────────┐
+                    │  Pending │  (initial state on booking)
+                    └────┬─────┘
+                         │
+              ┌──────────┼──────────┐
+              │          │          │
+              ▼          ▼          ▼
+        ┌─────────┐ ┌─────────┐ ┌──────────┐
+        │Confirmed│ │Cancelled│ │(continue)│
+        └────┬────┘ └─────────┘ └──────────┘
+             │
+             ▼
+        ┌──────────┐
+        │Completed │  (prescription/record can be added)
+        └──────────┘
+
+  Action endpoints:
+    /appointments/<id>/confirm/   → Confirmed
+    /appointments/<id>/complete/  → Completed
+    /appointments/<id>/cancel/    → Cancelled
+```
+
+#### Prescription Creation Flow (Post-Appointment)
+
+```
+  ┌──────────────┐     ┌──────────────┐     ┌──────────────────┐
+  │ Appointment  │────▶│ Prescription │────▶│ PrescriptionItem │
+  │  Completed   │     │   Created    │     │   (inline x N)   │
+  └──────────────┘     └──────┬───────┘     └──────────────────┘
+                              │
+                              ▼
+                     ┌──────────────────┐
+                     │   PDF Download   │  via xhtml2pdf
+                     │  (Prescription)  │
+                     └──────────────────┘
+```
 
 ### Medical Records & Prescriptions
 
