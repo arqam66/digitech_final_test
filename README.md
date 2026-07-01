@@ -26,23 +26,7 @@
     <img src="https://img.shields.io/badge/tests-playwright-45ba4b?logo=playwright&logoColor=white" alt="Playwright Tests">
   </p>
 
-  <h3>
-    <a href="#features">Features</a>
-    <span> · </span>
-    <a href="#tech-stack">Tech Stack</a>
-    <span> · </span>
-    <a href="#quick-start">Quick Start</a>
-    <span> · </span>
-    <a href="#demo-credentials">Demo Credentials</a>
-    <span> · </span>
-    <a href="#project-structure">Structure</a>
-    <span> · </span>
-    <a href="#requirements-checklist">Checklist</a>
-    <span> · </span>
-    <a href="#database-schema">Schema</a>
-    <span> · </span>
-    <a href="Hospital_Management_System.pdf" target="_blank" rel="noopener noreferrer">Report</a>
-  </h3>
+
 </div>
 
 ---
