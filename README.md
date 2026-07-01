@@ -27,6 +27,11 @@
   </p>
 
 
+  <p>
+    <a href="Hospital_Management_System.pdf" target="_blank" rel="noopener noreferrer">
+      <img src="https://img.shields.io/badge/📄-Project_Report-2E86C1?logo=adobeacrobatreader&logoColor=white" alt="Project Report PDF">
+    </a>
+  </p>
 </div>
 
 ---
