@@ -72,91 +72,86 @@ This system is designed for the following user groups in a hospital or clinical 
 
 ### High-Level Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           PRESENTATION LAYER                                │
-│  ┌───────────────────────────────────────────────────────────────────────┐  │
-│  │                 Bootstrap 5.3 UI (Templates)                          │  │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐   │  │
-│  │  │ Dashboards│ │  CRUD    │ │  Forms   │ │ Calendar │ │   PDF    │   │  │
-│  │  │  (Role)   │ │  Tables  │ │ (Inline) │ │   View   │ │   View   │   │  │
-│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘   │  │
-│  └───────────────────────────────────────────────────────────────────────┘  │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                           APPLICATION LAYER                                 │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────┐ │
-│  │ accounts │ │departments│ │  doctors │ │ patients │ │appointm. │ │records │
-│  │          │ │          │ │          │ │          │ │          │ │     │ │
-│  │ • Auth   │ │ • CRUD   │ │ • CRUD   │ │ • CRUD   │ │ • CRUD   │ │ • Rx│ │
-│  │ • RBAC   │ │ • HOD    │ │ • Avail. │ │ • Search │ │ • Workfl.│ │ • MR│ │
-│  │ • Dashboard│ │  Mgmt   │ │ • Filter │ │ • Tabs   │ │ • Dbl-Bk │ │ • PDF│ │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘ └─────┘ │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                           DATA LAYER                                        │
-│  ┌───────────────────────────────────────────────────────────────────────┐  │
-│  │                         SQLite Database                                │  │
-│  │  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐    │  │
-│  │  │ User │ │Doctor│ │Dept. │ │Patient│ │Appt. │ │  Rx  │ │ RxItem│   │  │
-│  │  │      │ │      │ │      │ │      │ │      │ │      │ │       │   │  │
-│  │  │  8   │ │  11  │ │  3   │ │  12  │ │  9   │ │  5   │ │   5   │   │  │
-│  │  │fields│ │fields│ │fields│ │fields│ │fields│ │fields│ │fields │   │  │
-│  │  └──────┘ └──────┘ └──────┘ └──────┘ └──────┘ └──────┘ └──────┘    │  │
-│  └───────────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph Presentation["PRESENTATION LAYER (Bootstrap 5.3 UI Templates)"]
+        Dashboards["Role Dashboards"]
+        Tables["CRUD Tables"]
+        Forms["Inline Forms"]
+        Calendar["Calendar View"]
+        PDF["PDF View"]
+    end
+
+    subgraph Application["APPLICATION LAYER (Django Apps)"]
+        accounts["accounts<br>• Auth & RBAC<br>• Dashboards"]
+        departments["departments<br>• CRUD<br>• HOD Mgmt"]
+        doctors["doctors<br>• CRUD<br>• Availability<br>• Filters"]
+        patients["patients<br>• CRUD<br>• Search<br>• Detail Tabs"]
+        appointments["appointments<br>• CRUD<br>• Status Workflow<br>• Double-Booking Check"]
+        records["records<br>• Prescriptions (Rx)<br>• Medical Records (MR)<br>• PDF Gen"]
+    end
+
+    subgraph Data["DATA LAYER (SQLite Database)"]
+        db_User["User<br>(8 fields)"]
+        db_Doctor["Doctor<br>(11 fields)"]
+        db_Dept["Department<br>(3 fields)"]
+        db_Patient["Patient<br>(12 fields)"]
+        db_Appt["Appointment<br>(9 fields)"]
+        db_Rx["Prescription<br>(5 fields)"]
+        db_RxItem["PrescriptionItem<br>(5 fields)"]
+    end
+
+    Presentation --> Application
+    Application --> Data
 ```
 
 ### Application-to-Model Mapping
 
-```
-┌────────────┐    ┌─────────────┐
-│  accounts  │───▶│  User       │  (custom AbstractUser + role)
-└────────────┘    └─────────────┘
-                       │ 1:1
-                       ▼
-┌────────────┐    ┌─────────────┐    N:1    ┌──────────────┐
-│  doctors   │───▶│  Doctor     │◀──────────│  Department  │◀────┐
-└────────────┘    └─────────────┘           └──────────────┘     │
-                       │ 1:N         head_of_department (1:N)────┘
-                       │
-              ┌────────┼────────┐
-              │        │        │
-              ▼        ▼        ▼
-       ┌──────────┐ ┌──────┐ ┌──────────────┐
-       │Appointm. │ │  Rx  │ │MedicalRecord │
-       └──────────┘ └──────┘ └──────────────┘
-            │ 1:N      │ 1:N         │ 1:N
-            │          │             │
-            ▼          ▼             ▼
-       ┌──────────┐ ┌──────────────┐
-       │ Patient  │ │ Presc. Item  │
-       └──────────┘ └──────────────┘
+```mermaid
+graph TD
+    accounts[accounts app] -.-> User
+    doctors[doctors app] -.-> Doctor
+
+    User -->|1:1| Doctor
+    Department -->|1:N members| Doctor
+    Doctor -->|1:N head_of_department| Department
+    
+    Patient -->|1:N| Appointment
+    Patient -->|1:N| Prescription
+    Patient -->|1:N| MedicalRecord
+    
+    Doctor -->|1:N| Appointment
+    Doctor -->|1:N| Prescription
+    Doctor -->|1:N| MedicalRecord
+    
+    Appointment -->|1:1| MedicalRecord
+    Prescription -->|1:N| PrescriptionItem
+
+    style User fill:#f9f,stroke:#333,stroke-width:2px
+    style Doctor fill:#bbf,stroke:#333,stroke-width:1px
+    style Department fill:#bbf,stroke:#333,stroke-width:1px
+    style Patient fill:#bbf,stroke:#333,stroke-width:1px
+    style Appointment fill:#dfd,stroke:#333,stroke-width:1px
+    style Prescription fill:#dfd,stroke:#333,stroke-width:1px
+    style PrescriptionItem fill:#dfd,stroke:#333,stroke-width:1px
+    style MedicalRecord fill:#dfd,stroke:#333,stroke-width:1px
 ```
 
 ### User Role Hierarchy & Access Control
 
-```
-                    ┌──────────────────────┐
-                    │   Unauthenticated    │
-                    │   (Login Page Only)  │
-                    └──────────┬───────────┘
-                               │ login
-                               ▼
-                    ┌──────────────────────┐
-                    │    Authenticated     │
-                    │   (Any Valid User)   │
-                    └──────────┬───────────┘
-                               │ redirect by role
-             ┌─────────────────┼──────────────────┐
-             ▼                 ▼                  ▼
-    ┌────────────────┐ ┌──────────────┐ ┌────────────────┐
-    │     Admin      │ │    Doctor    │ │  Receptionist  │
-    │                │ │              │ │                │
-    │ Full access    │ │ Doctor's own │ │ Patient CRUD   │
-    │ All CRUD       │ │ appointments │ │ Appointment CRUD│
-    │ All modules    │ │ Prescriptions│ │ Search/View    │
-    │ User mgmt     │ │ Med Records  │ │ ❌ Delete      │
-    │ System config  │ │ ❌ Admin     │ │ ❌ Doctor mgmt │
-    └────────────────┘ └──────────────┘ └────────────────┘
+```mermaid
+graph TD
+    Unauth["Unauthenticated<br>(Login Page Only)"] -->|login| Auth["Authenticated<br>(Any Valid User)"]
+    
+    Auth -->|redirect by role| Admin["👑 Admin<br><br>• Full access / All CRUD<br>• All modules<br>• User Management<br>• System Configuration"]
+    Auth -->|redirect by role| Doctor["👨‍⚕️ Doctor<br><br>• Doctor's own appointments<br>• Prescriptions & Med Records<br>• ❌ Admin access"]
+    Auth -->|redirect by role| Receptionist["🖥️ Receptionist<br><br>• Patient CRUD<br>• Appointment CRUD<br>• Search/View only<br>• ❌ Delete permission<br>• ❌ Doctor management"]
+
+    style Unauth fill:#fbb,stroke:#333,stroke-width:1px
+    style Auth fill:#dfd,stroke:#333,stroke-width:1px
+    style Admin fill:#bbf,stroke:#333,stroke-width:2px
+    style Doctor fill:#bbf,stroke:#333,stroke-width:2px
+    style Receptionist fill:#bbf,stroke:#333,stroke-width:2px
 ```
 
 ---
@@ -165,76 +160,42 @@ This system is designed for the following user groups in a hospital or clinical 
 
 Every user action in the system follows Django's Model-View-Template (MVT) architecture. Below is the complete request lifecycle for a typical operation (e.g., creating a prescription):
 
-```
-  USER ACTION                          DJANGO REQUEST LIFECYCLE
-  ════════════════════════════════════════════════════════════════════════
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Browser / User
+    participant URL as URL Dispatcher<br>(urls.py)
+    participant View as Django View<br>(views.py)
+    participant Form as Django Form<br>(forms.py)
+    participant Model as Django Model<br>(models.py)
+    participant DB as SQLite DB
+    participant Template as Template Engine<br>(HTML)
 
-  Browser / Form Submit
-        │
-        ▼
-  ┌──────────────────────────────────────────────────────────────────┐
-  │                     URL DISPATCHER                               │
-  │  hospital/urls.py → records/urls.py                              │
-  │  MATCH: /records/prescriptions/create/                           │
-  │  → routes to records/views.py:prescription_create               │
-  └──────────────────────────────────────────────────────────────────┘
-        │
-        ▼
-  ┌──────────────────────────────────────────────────────────────────┐
-  │                     VIEW (Controller)                            │
-  │  records/views.py:prescription_create()                          │
-  │                                                                  │
-  │  Step 1: Check authentication & authorization                   │
-  │  Step 2: Fetch related data (patients, doctors, appointments)    │
-  │  Step 3: Instantiate PrescriptionForm + PrescriptionItemFormSet  │
-  │  Step 4: Validate on POST → if valid, save model instance        │
-  │  Step 5: Redirect to detail view on success                      │
-  └──────────────────────────────────────────────────────────────────┘
-        │
-        ├──────────────────────────────────┐
-        ▼                                  ▼
-  ┌────────────────────┐       ┌────────────────────────┐
-  │      MODEL         │       │        FORM            │
-  │  records/models.py │       │  records/forms.py      │
-  │                    │       │                        │
-  │  Prescription      │       │  PrescriptionForm      │
-  │  ├── appointment   │       │  ├── appointment (FK)  │
-  │  ├── patient       │       │  ├── patient (FK)      │
-  │  ├── doctor        │       │  ├── doctor (FK)       │
-  │  ├── diagnosis     │       │  ├── diagnosis (Text)  │
-  │  └── notes         │       │  └── notes (Text)      │
-  │                    │       │                        │
-  │  PrescriptionItem  │       │  PrescriptionItemForm  │
-  │  ├── medicine_name │       │  ├── medicine_name     │
-  │  ├── dosage        │       │  ├── dosage            │
-  │  ├── frequency     │       │  ├── frequency         │
-  │  ├── duration      │       │  ├── duration          │
-  │  └── instructions  │       │  └── instructions      │
-  │                    │       │                        │
-  │  SQLite: INSERT    │       │  PrescriptionItemFormSet│
-  │  INTO prescriptions│       │  (inlineformset_factory,│
-  │  INTO rx_items     │       │   extra=3, can_delete) │
-  └────────────────────┘       └────────────────────────┘
-        │                                │
-        └──────────────┬─────────────────┘
-                       ▼
-  ┌──────────────────────────────────────────────────────────────────┐
-  │                   TEMPLATE (Rendering)                           │
-  │                                                                  │
-  │  GET request  → prescription_form.html                           │
-  │                  ├── Bootstrap 5.3 form controls                 │
-  │                  ├── Inline formset table for medicine items     │
-  │                  ├── Dynamic add/remove via JavaScript           │
-  │                  └── CSRF token, action URL                      │
-  │                                                                  │
-  │  POST success  → Redirect to prescription_detail.html            │
-  │                  ├── Patient info, doctor, date                  │
-  │                  ├── Medicine items table                        │
-  │                  └── Download PDF button                         │
-  └──────────────────────────────────────────────────────────────────┘
-        │
-        ▼
-  Browser Response (HTML page or PDF)
+    User->>URL: Submit Form / GET Request (e.g., /records/prescriptions/create/)
+    URL->>View: Resolve route to prescription_create view
+    
+    rect rgb(240, 240, 255)
+        note over View: GET Request Flow
+        View->>Form: Instantiate empty forms / formsets
+        View->>Template: Render with forms (prescription_form.html)
+        Template->>User: Display HTML form with empty fields
+    end
+
+    rect rgb(240, 255, 240)
+        note over View: POST Request Flow
+        User->>View: Submit POST data
+        View->>Form: Bind POST data to PrescriptionForm & PrescriptionItemFormSet
+        Form->>Form: Validate fields & formsets
+        alt If Valid
+            View->>Model: Save Prescription & items
+            Model->>DB: INSERT INTO prescriptions & rx_items
+            View->>Template: Redirect & render detail (prescription_detail.html)
+            Template->>User: Return HTML / PDF response
+        else If Invalid
+            View->>Template: Re-render form with validation errors
+            Template->>User: Display form with error messages
+        end
+    end
 ```
 
 This pattern is repeated consistently across all 6 apps, with the following variations:
@@ -254,77 +215,40 @@ This pattern is repeated consistently across all 6 apps, with the following vari
 
 Below is the complete lifecycle of a patient within the system — from first registration to receiving a prescription — showing exactly which modules, views, and templates are involved at each step.
 
-```
-  ┌─────────────────────────────────────────────────────────────────────────┐
-  │                       PATIENT LIFECYCLE                                 │
-  └─────────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    step1["<strong>Step 1: Patient Registration</strong><br>• Actor: Receptionist/Doctor<br>• View: accounts/views.py:login_view → patients/views.py:create_view<br>• Template: patient_form.html<br>• Form: patients/forms.py:PatientForm<br>• Result: Patient record saved to database"]
+    
+    step2["<strong>Step 2: Appointment Booking</strong><br>• Actor: Receptionist/Doctor<br>• View: appointments/views.py:create<br>• Template: appointment_form.html<br>• Form: appointments/forms.py:ApptForm (checks double-booking)<br>• Result: Appointment created in 'Pending' status"]
+    
+    step3["<strong>Step 3: Appointment Confirmation</strong><br>• Actor: Admin/Receptionist<br>• View: appointments/views.py:confirm<br>• Action: POST /appointments/{id}/confirm/<br>• Result: Appointment status updated: Pending → Confirmed"]
+    
+    step4["<strong>Step 4: Doctor Visit</strong><br>• Actor: Doctor<br>• View: appointments/views.py:complete<br>• Action: POST /appointments/{id}/complete/<br>• Result: Appointment status updated: Confirmed → Completed"]
+    
+    step5a["<strong>Step 5a: Prescription Creation</strong><br>• Actor: Doctor<br>• View: records/views.py:prescription_create<br>• Template: prescription_form.html<br>• Form: PrescriptionForm + PrescriptionItemFormSet<br>• Result: Prescription and medicines saved"]
+    
+    step5b["<strong>Step 5b: Medical Record Logging</strong><br>• Actor: Doctor<br>• View: records/views.py:MedicalRecordCreateView<br>• Template: medical_record_form.html<br>• Result: Diagnosis, treatment plans, and test results logged"]
 
-  STEP 1: PATIENT REGISTRATION
-  ┌──────────────────────────────────────────────────────────────────────┐
-  │  Receptionist/Doctor logs in          accounts/views.py:login_view  │
-  │  → Clicks "Register Patient"          template: patient_form.html   │
-  │  → Fills: name, DOB, gender, blood,   patients/forms.py:PatientForm │
-  │    phone, email, address, emergency   patients/views.py:create_view  │
-  │  → Submits → Patient record created   patients/models.py:Patient     │
-  └──────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-  STEP 2: APPOINTMENT BOOKING
-  ┌──────────────────────────────────────────────────────────────────────┐
-  │  Receptionist/Doctor selects patient  appointments/forms.py:ApptForm │
-  │  → Picks department, doctor, date,    appointments/views.py:create   │
-  │    time slot, reason for visit        appointments/models.py:Appt.   │
-  │  → Double-booking check passes        AppointmentForm.clean()         │
-  │  → Appointment created (Pending)      templates: appointment_form    │
-  └──────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-  STEP 3: APPOINTMENT CONFIRMATION
-  ┌──────────────────────────────────────────────────────────────────────┐
-  │  Admin/Receptionist confirms           appointments/views.py:confirm │
-  │  → Status: Pending → Confirmed        POST /appointments/<id>/confirm│
-  │  → Patient can now receive care       template: appointment_detail  │
-  └──────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-  STEP 4: DOCTOR VISIT
-  ┌──────────────────────────────────────────────────────────────────────┐
-  │  Doctor logs in → sees appointment    accounts/views.py:doctor_dash  │
-  │  → Marks as Completed                 appointments/views.py:complete │
-  │  → Status: Confirmed → Completed      POST /appointments/<id>/compl. │
-  └──────────────────────────────────────────────────────────────────────┘
-                                      │
-                         ┌────────────┼────────────┐
-                         ▼            ▼            ▼
-  STEP 5a:               │ STEP 5b:   │ STEP 5c:   │
-  PRESCRIPTION           │ MEDICAL    │ PATIENT    │
-                         │ RECORD     │ REPORT     │
-  ┌──────────────────┐   ┌─────────┐  ┌─────────┐  │
-  │ Doctor creates   │   │ Doctor  │  │ Any role │  │
-  │ prescription     │   │ logs    │  │ views    │  │
-  │ with inline      │   │ diagno- │  │ patient  │  │
-  │ medicine items   │   │ sis,    │  │ summary  │  │
-  │                   │   │ treatm. │  │ with all │  │
-  │ records/views.py  │   │ tests   │  │ counts   │  │
-  │ → prescription_   │   │          │  │          │  │
-  │   create          │   │ records/ │  │ records/ │  │
-  │                   │   │ views.py │  │ views.py │  │
-  │ PrescriptionForm  │   │ → create │  │ → report │  │
-  │ + ItemFormSet     │   │          │  │          │  │
-  └────────┬─────────┘   └──────────┘  └──────────┘  │
-           │                                          │
-           ▼                                          │
-  STEP 6: PDF DOWNLOAD                                │
-  ┌─────────────────────────────────────────────┐     │
-  │  Any role views prescription detail         │     │
-  │  → Clicks "Download PDF"                    │     │
-  │  → xhtml2pdf renders prescription_pdf.html  │     │
-  │  → PDF includes: letterhead, medicine       │     │
-  │    table, doctor signature area             │     │
-  │  records/utils.py:render_pdf()              │     │
-  └─────────────────────────────────────────────┘     │
-                                                      │
-                      ◄────────────────────────────────┘
+    step5c["<strong>Step 5c: Patient Report Generation</strong><br>• Actor: Admin/Receptionist/Doctor<br>• View: records/views.py:patient_report<br>• Template: patient_report.html<br>• Result: Summary analytics and patient history consolidated"]
+    
+    step6["<strong>Step 6: PDF Download</strong><br>• Actor: Any role<br>• View: records/views.py:prescription_pdf<br>• Util: records/utils.py:render_pdf() via xhtml2pdf<br>• Result: Professional prescription PDF generated"]
+
+    step1 --> step2
+    step2 --> step3
+    step3 --> step4
+    step4 --> step5a
+    step4 --> step5b
+    step4 --> step5c
+    step5a --> step6
+
+    style step1 fill:#dff,stroke:#333,stroke-width:1px
+    style step2 fill:#dff,stroke:#333,stroke-width:1px
+    style step3 fill:#dff,stroke:#333,stroke-width:1px
+    style step4 fill:#dff,stroke:#333,stroke-width:1px
+    style step5a fill:#ffd,stroke:#333,stroke-width:1px
+    style step5b fill:#ffd,stroke:#333,stroke-width:1px
+    style step5c fill:#ffd,stroke:#333,stroke-width:1px
+    style step6 fill:#dfd,stroke:#333,stroke-width:2px
 ```
 
 ### End-to-End Scenario Walkthrough
@@ -417,42 +341,44 @@ Prescription (1:N) → PrescriptionItem
 
 #### Appointment Status Lifecycle
 
-```
-                    ┌──────────┐
-                    │  Pending │  (initial state on booking)
-                    └────┬─────┘
-                         │
-              ┌──────────┼──────────┐
-              │          │          │
-              ▼          ▼          ▼
-        ┌─────────┐ ┌─────────┐ ┌──────────┐
-        │Confirmed│ │Cancelled│ │(continue)│
-        └────┬────┘ └─────────┘ └──────────┘
-             │
-             ▼
-        ┌──────────┐
-        │Completed │  (prescription/record can be added)
-        └──────────┘
+#### Appointment Status Lifecycle
 
-  Action endpoints:
-    /appointments/<id>/confirm/   → Confirmed
-    /appointments/<id>/complete/  → Completed
-    /appointments/<id>/cancel/    → Cancelled
+```mermaid
+stateDiagram-v2
+    [*] --> Pending : Initial booking
+    
+    state Pending {
+        note right of Pending: Actions: confirm or cancel
+    }
+    
+    Pending --> Confirmed : Admin / Receptionist confirms
+    Pending --> Cancelled : Cancelled
+    
+    state Confirmed {
+        note right of Confirmed: Actions: complete or cancel
+    }
+    
+    Confirmed --> Completed : Doctor treats patient
+    Confirmed --> Cancelled : Cancelled
+    
+    Completed --> [*] : Medical records & prescriptions logged
+    Cancelled --> [*]
 ```
 
 #### Prescription Creation Flow (Post-Appointment)
 
-```
-  ┌──────────────┐     ┌──────────────┐     ┌──────────────────┐
-  │ Appointment  │────▶│ Prescription │────▶│ PrescriptionItem │
-  │  Completed   │     │   Created    │     │   (inline x N)   │
-  └──────────────┘     └──────┬───────┘     └──────────────────┘
-                              │
-                              ▼
-                     ┌──────────────────┐
-                     │   PDF Download   │  via xhtml2pdf
-                     │  (Prescription)  │
-                     └──────────────────┘
+#### Prescription Creation Flow (Post-Appointment)
+
+```mermaid
+graph LR
+    appt[Appointment Completed] -->|triggers| rx[Prescription Created]
+    rx -->|contains 1:N| items[Prescription Items<br>(Medicines)]
+    rx -->|renders via xhtml2pdf| pdf[PDF Download]
+
+    style appt fill:#f99,stroke:#333,stroke-width:1px
+    style rx fill:#fd9,stroke:#333,stroke-width:1px
+    style items fill:#dfd,stroke:#333,stroke-width:1px
+    style pdf fill:#9f9,stroke:#333,stroke-width:2px
 ```
 
 ### Medical Records & Prescriptions
