@@ -41,7 +41,7 @@
     <span> · </span>
     <a href="#database-schema">Schema</a>
     <span> · </span>
-    <a href="Hospital_Management_System.pdf">Report</a>
+    <a href="Hospital_Management_System.pdf" target="_blank" rel="noopener noreferrer">Report</a>
   </h3>
 </div>
 
